@@ -1,2 +1,2 @@
-gcc typing_test.c
+gcc typing_test.c -lncurses -g
 ./a.out

@@ -15,3 +15,9 @@ Objectives:
 * Clean Code
 * Memory Management
 * Learning C
+
+How To Compile:
+
+Download source files
+Install ncurses (If not already installed)
+Run "gcc gcc typing_test.c -lncurses"
