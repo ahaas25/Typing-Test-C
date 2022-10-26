@@ -1,0 +1,2 @@
+gcc typing_test.c
+./a.out
