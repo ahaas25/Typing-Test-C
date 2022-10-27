@@ -1,5 +1,7 @@
 # Typing-Test-C (WIP)
 
+![image](https://user-images.githubusercontent.com/94150901/198175436-75b9f576-1b13-498b-b858-cbb1c9e7b7b6.png)
+
 **Summary:**
 
 Typing Test Written in C Programming Language
@@ -16,6 +18,7 @@ Similar to my Typing-Teacher project, however this is more focused on analyzing 
 **Objectives**:
 * Clean Code
 * Memory Management
+* Intuitive UI
 * Learning C
 
 **How To Compile:**
