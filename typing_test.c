@@ -43,6 +43,52 @@ int print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_ST
     }
 }
 
+int typing_ui(WINDOW *win, int level, int mode) {
+    int run = 1, ch, i, words, win_x = win->_maxx;
+    char str[1024];
+
+    clear();
+    if (mode == 0) {
+        strcat(str, "Timed Test - ");
+        strcat(str, TIMED_MODES_STRING[level]);
+        print_centered_text(stdscr, 0, str);
+    } else {
+        strcat(str, "Word Test - ");
+        strcat(str, WORD_MODES_STRING[level]);
+        print_centered_text(stdscr, 0, str);
+    }
+
+    for (i = 0; i < words; i++) {
+        /* Will print the words centered in the screen */
+        /* Will scroll down when user finishes middle line */
+        /* Will automatically wrap text to next line based on
+            how big the console size is */
+    }
+
+    /* For now prints placeholder text for the purposes of testing */
+
+    print_centered_text(win, 3, "The quick brown fox jumps over the lazy dog");
+    print_centered_text(win, 4, "Line 2");
+    print_centered_text(win, 5, "Line 3");
+    
+    printw("%d", win_x);
+
+    move(7, (win_x / 8));
+
+
+    while (run) {
+        ch = getch();
+        printw("%c", ch);
+        if (ch == '	') {
+            printw("RESET TEST");
+        }
+    }
+}
+
+int load_words_file() {
+    FILE *words_file;
+}
+
 /* Main function. Creates main menu */
 int main() {
     int cursor_x = 0, cursor_y = 0, run = 1;
@@ -101,6 +147,8 @@ int main() {
         if (ch == '\n') {
             if (cursor_x == 0 && cursor_y == 2) {
                 run = 0;
+            } else if (cursor_y == 1 || cursor_y == 0) {
+                typing_ui(stdscr, cursor_x, cursor_y);
             }
         }
 
