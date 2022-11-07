@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
+#include "utilities.h"
 #include "typing_test.h"
 
 int main() {
@@ -10,5 +11,5 @@ int main() {
 
     words = fopen("words.txt", "r");
     Word_array word_array;
-    parse_words_file(words, word_array);
+    parse_words_file(words, &word_array);
 }
