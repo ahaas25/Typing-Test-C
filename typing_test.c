@@ -6,7 +6,7 @@
 #include "typing_test.h"
 
 /* Prints Centered Text To Console Screen */
-int print_centered_text(WINDOW *win, int row, char str[]) {
+void print_centered_text(WINDOW *win, int row, char str[]) {
     int text_spacing = strlen(str);
     int center_col = (win->_maxx - text_spacing) / 2;
 
@@ -14,7 +14,7 @@ int print_centered_text(WINDOW *win, int row, char str[]) {
 }
 
 /* Prints centered text for menu items */
-int print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_STRING],
+void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_STRING],
     int highlight, int elements) {
     int text_length = 0, center_col, i, k, cursor;
 
@@ -43,7 +43,38 @@ int print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_ST
     }
 }
 
-int typing_ui(WINDOW *win, int level, int mode) {
+/* This will go through the word_array structure and find the requested
+    amount of words */
+int generate_words(int num_words, Word_array *words, char *to_return) {
+    int i, k, number_words_in_txt;
+
+    to_return = malloc(num_words * 64); /* Each word will be less than 64 chars */
+
+    for (i = 0; i < words->number_of_words; i++) {
+
+    }
+
+    return SUCCESS;
+}
+
+
+/* This will dynamically allocate memory to a 2d char array of all the words
+    in words.txt */
+int parse_words_file(FILE *words_file, Word_array *words) {
+    int i, number_of_words;
+    char buf[256];
+
+    /* Counts number of lines in words file (Each line contains a unique word) */
+    while (fgets(buf, sizeof(buf), words) != NULL) {
+        number_of_words++;
+    }
+
+    printf("Number of words: %d\n", number_of_words);
+
+    return SUCCESS;
+}
+
+void typing_ui(WINDOW *win, int level, int mode, FILE *word_file) {
     int run = 1, ch, i, words, win_x = win->_maxx;
     char str[1024];
 
@@ -70,7 +101,7 @@ int typing_ui(WINDOW *win, int level, int mode) {
     print_centered_text(win, 3, "The quick brown fox jumps over the lazy dog");
     print_centered_text(win, 4, "Line 2");
     print_centered_text(win, 5, "Line 3");
-    
+
     printw("%d", win_x);
 
     move(7, (win_x / 8));
@@ -85,12 +116,9 @@ int typing_ui(WINDOW *win, int level, int mode) {
     }
 }
 
-int load_words_file() {
-    FILE *words_file;
-}
-
 /* Main function. Creates main menu */
 int main() {
+    FILE *words;
     int cursor_x = 0, cursor_y = 0, run = 1;
     int ch, key;
 
@@ -99,7 +127,33 @@ int main() {
     keypad(stdscr, TRUE);
     noecho();
 
+    words = fopen("words.txt", "r");
+
+    if (has_colors() == FALSE) {
+        print_centered_text(stdscr, 4, "Your terminal does not support color");
+        print_centered_text(stdscr, 5, "This may result in unexpected behavior\n");
+        print_centered_text(stdscr, 6, "Press any key to continue.\n");
+    } else {
+        start_color();
+    }
+
+    if (words == NULL) {
+        run = 0;
+
+        init_color(COLOR_WHITE, 255, 255, 0);
+        init_pair(1, COLOR_RED, COLOR_WHITE);
+        attron(COLOR_PAIR(1));
+        print_centered_text(stdscr, 4, "Words list could not be loaded.");
+        print_centered_text(stdscr, 5, "Please ensure words.txt is not missing");
+        print_centered_text(stdscr, 6, "Press any key to exit.\n");
+        attroff(COLOR_PAIR(0));
+        ch = getch();
+    }
+
     while (run) {
+        init_pair(2, COLOR_WHITE, COLOR_BLACK);
+        attron(COLOR_PAIR(2));
+
         print_centered_text(stdscr, 0, "Typing Test");
         print_centered_text(stdscr, 1, "By Aidan Haas");
         print_centered_text(stdscr, 3, "Modes");
@@ -148,7 +202,7 @@ int main() {
             if (cursor_x == 0 && cursor_y == 2) {
                 run = 0;
             } else if (cursor_y == 1 || cursor_y == 0) {
-                typing_ui(stdscr, cursor_x, cursor_y);
+                typing_ui(stdscr, cursor_x, cursor_y, words);
             }
         }
 
