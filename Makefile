@@ -7,8 +7,8 @@ LDLIBS = -lncurses
 all: typing_test debugger
 
 # Create executables
-typing_test: typing_test.o string_helpers.o
-	$(CC) -o typing_test typing_test.o string_helpers.o $(LDLIBS) 
+typing_test: typing_test.o utilities.o
+	$(CC) -o typing_test typing_test.o utilities.o $(LDLIBS) 
 
 debugger: debugger.o utilities.o
 	$(CC) -o debugger debugger.o utilities.o

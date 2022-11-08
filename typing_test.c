@@ -44,7 +44,7 @@ void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_S
     }
 }
 
-void typing_ui(WINDOW *win, int level, int mode, FILE *word_file) {
+void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
     int run = 1, ch, i, words, win_x = win->_maxx;
     char str[1024];
 
@@ -88,7 +88,8 @@ void typing_ui(WINDOW *win, int level, int mode, FILE *word_file) {
 
 /* Main function. Creates main menu */
 int main() {
-    FILE *words;
+    FILE *words_file;
+    Word_array *word_array;
     int cursor_x = 0, cursor_y = 0, run = 1;
     int ch, key;
 
@@ -97,7 +98,7 @@ int main() {
     keypad(stdscr, TRUE);
     noecho();
 
-    words = fopen("words.txt", "r");
+    words_file = fopen("words.txt", "r");
 
     if (has_colors() == FALSE) {
         print_centered_text(stdscr, 4, "Your terminal does not support color");
@@ -107,7 +108,7 @@ int main() {
         start_color();
     }
 
-    if (words == NULL) {
+    if (words_file == NULL) {
         run = 0;
 
         init_color(COLOR_WHITE, 255, 255, 0);
@@ -118,6 +119,8 @@ int main() {
         print_centered_text(stdscr, 6, "Press any key to exit.\n");
         attroff(COLOR_PAIR(0));
         ch = getch();
+    } else {
+        parse_words_file(words_file, word_array);
     }
 
     while (run) {
@@ -172,11 +175,14 @@ int main() {
             if (cursor_x == 0 && cursor_y == 2) {
                 run = 0;
             } else if (cursor_y == 1 || cursor_y == 0) {
-                typing_ui(stdscr, cursor_x, cursor_y, words);
+                typing_ui(stdscr, cursor_x, cursor_y, &word_array);
             }
         }
 
     }
+
+    /* Exiting */
+    free(word_array);
 
     refresh();
     endwin();
