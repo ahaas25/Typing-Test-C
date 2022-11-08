@@ -10,6 +10,7 @@
 * Word Mode: 10, 25, 50, and 100 Words
 * Focuses on User's Typing Style and Provides Insights
 * Similar to my Typing-Teacher project, however this is more focused on analyzing user data, rather than UI.
+* Uses ncurses library
 
 # Objectives
 * Clean Code
@@ -22,6 +23,7 @@
 * Download source files
 * Install ncurses (If not already installed)
 * Compile Using ```"gcc gcc typing_test.c -lncurses"```
+* OR: Run "make" using Makefile
 
 # Credits
 Word list from https://gist.github.com/deekayen/4148741
