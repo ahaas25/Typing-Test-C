@@ -1,9 +1,20 @@
 #include "utilities.h"
-#include <time.h>
+#include <sys/time.h>
+
+/* Clears word array given in parameters */
+void clear_word_array(Word_array *array) {
+    int i;
+    for (i = 0; i < array->number_of_words; i++) {
+        free(array->words[i].text);
+    }
+    array->number_of_words = 0;
+}
 
 int generate_random(int lower, int upper, int c) {
-    time_t x;
-    srand(x);
+    struct timeval te;
+    gettimeofday(&te, NULL);
+    long long milliseconds = te.tv_sec * 1000LL + te.tv_usec / 1000;
+    srand(milliseconds + c);
     return (rand() % (upper - lower + 1)) + lower;
 }
 

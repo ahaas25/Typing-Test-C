@@ -15,5 +15,6 @@ typedef struct {
     Word *words;
 } Word_array;
 
+void clear_word_array(Word_array *array);
 int generate_words(int num_words, Word_array *words, Word_array *to_return);
 int parse_words_file(FILE *words_file, Word_array *words);

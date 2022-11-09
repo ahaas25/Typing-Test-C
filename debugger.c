@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
+#include <sys/time.h>
 #include "utilities.h"
 #include "typing_test.h"
+
 
 int main() {
     FILE *words_file;

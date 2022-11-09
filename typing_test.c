@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
+#include <ctype.h>
 #include "typing_test.h"
 #include "utilities.h"
 
@@ -45,19 +46,11 @@ void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_S
 }
 
 void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
-    int run = 1, ch, i, words, win_x = win->_maxx;
+    int run = 1, ch, i, words, win_x = win->_maxx, new_test = 1;
     char str[1024];
+    Word_array *prompt = NULL;
 
-    clear();
-    if (mode == 0) {
-        strcat(str, "Timed Test - ");
-        strcat(str, TIMED_MODES_STRING[level]);
-        print_centered_text(stdscr, 0, str);
-    } else {
-        strcat(str, "Word Test - ");
-        strcat(str, WORD_MODES_STRING[level]);
-        print_centered_text(stdscr, 0, str);
-    }
+    printw("\nPrompt: \n");
 
     for (i = 0; i < words; i++) {
         /* Will print the words centered in the screen */
@@ -68,22 +61,52 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
 
     /* For now prints placeholder text for the purposes of testing */
 
-    print_centered_text(win, 3, "The quick brown fox jumps over the lazy dog");
-    print_centered_text(win, 4, "Line 2");
-    print_centered_text(win, 5, "Line 3");
-
-    printw("%d", win_x);
-
-    move(7, (win_x / 8));
-
+    /* Make "Print words function for simplicity" */
 
     while (run) {
+        if (new_test == 1) {
+            clear();
+
+            str[0] = '\0';
+
+            if (mode == 0) {
+                strcat(str, "Timed Test - ");
+                strcat(str, TIMED_MODES_STRING[level]);
+                print_centered_text(stdscr, 0, str);
+            } else {
+                strcat(str, "Word Test - ");
+                strcat(str, WORD_MODES_STRING[level]);
+                print_centered_text(stdscr, 0, str);
+            }
+
+            printw("\nPrompt:\n"); /* Temp */
+
+            if (prompt == NULL) {
+                prompt = malloc(sizeof(Word_array));
+            } else {
+                clear_word_array(prompt);
+            }
+
+            generate_words(10, word_array, prompt);
+
+            new_test = 0;
+            for (i = 0; i < prompt->number_of_words; i++) {
+                printw("%d: %s ", i, prompt->words[i].text);
+            }
+        }
+
         ch = getch();
-        printw("%c", ch);
+        if (isalpha(ch)) {
+            printw("%c", ch);
+        }
+
         if (ch == '	') {
             printw("RESET TEST");
+            new_test = 1;
         }
     }
+
+    free(prompt);
 }
 
 /* Main function. Creates main menu */
@@ -93,6 +116,7 @@ int main() {
     int cursor_x = 0, cursor_y = 0, run = 1;
     int ch, key;
 
+    word_array = malloc(sizeof(Word_array));
     initscr();
     cbreak();
     keypad(stdscr, TRUE);
@@ -175,14 +199,13 @@ int main() {
             if (cursor_x == 0 && cursor_y == 2) {
                 run = 0;
             } else if (cursor_y == 1 || cursor_y == 0) {
-                typing_ui(stdscr, cursor_x, cursor_y, &word_array);
+                typing_ui(stdscr, cursor_x, cursor_y, word_array);
             }
         }
 
     }
 
     /* Exiting */
-    free(word_array);
 
     refresh();
     endwin();
