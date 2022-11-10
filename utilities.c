@@ -7,9 +7,12 @@ void clear_word_array(Word_array *array) {
     for (i = 0; i < array->number_of_words; i++) {
         free(array->words[i].text);
     }
+    free(array->words);
     array->number_of_words = 0;
 }
 
+/* Generates a pseudo random number using current millisecond + iteration since
+    code runs too fast */
 int generate_random(int lower, int upper, int c) {
     struct timeval te;
     gettimeofday(&te, NULL);
@@ -21,7 +24,7 @@ int generate_random(int lower, int upper, int c) {
 /* This will go through the word_array structure and find the requested
     amount of words */
 int generate_words(int number_of_words, Word_array *words, Word_array *to_return) {
-    int i, k;
+    int i, k, len = 0;
 
     /* Remember to free me after the test ends! */
 
@@ -29,11 +32,14 @@ int generate_words(int number_of_words, Word_array *words, Word_array *to_return
     to_return->words = malloc(sizeof(Word) * number_of_words);
 
     for (i = 0; i < number_of_words; i++) {
-        k = generate_random(0, words->number_of_words, i);
+        k = generate_random(0, words->number_of_words - 1, i);
+        len += words->words[k].length + 1;
         to_return->words[i].length = words->words[k].length;
         to_return->words[i].text = malloc(words->words[k].length);
         strcpy(to_return->words[i].text, words->words[k].text);
     }
+
+    to_return->num_characters = len;
 
     return SUCCESS;
 }

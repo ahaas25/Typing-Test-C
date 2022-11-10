@@ -5,13 +5,20 @@
 #define SUCCESS 1
 #define FAILURE 0
 
+/* Word Structure
+    length - length of word
+    text - word String */
 typedef struct {
     int length;
     char *text;
 } Word;
 
+/* Word Array Structure
+    number_of_words - stores number of words
+    num_characters - is total character count of array (including spaces)
+    words - Array of 'Word' structures  */
 typedef struct {
-    int number_of_words;
+    int number_of_words, num_characters;
     Word *words;
 } Word_array;
 

@@ -1,6 +1,6 @@
 # Macros
 CC = gcc
-CFLAGS = -ansi -Wall -g -O0 -Wshadow -Wwrite-strings \
+CFLAGS = -ansi -Wall -g -O0 -Wshadow \
 -fstack-protector-all
 LDLIBS = -lncurses
 

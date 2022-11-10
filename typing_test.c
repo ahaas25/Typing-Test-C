@@ -8,17 +8,16 @@
 #include "utilities.h"
 
 /* Prints Centered Text To Console Screen */
-void print_centered_text(WINDOW *win, int row, char str[]) {
+void print_centered_text(WINDOW *win, int row, char *str) {
     int text_spacing = strlen(str);
     int center_col = (win->_maxx - text_spacing) / 2;
-
     mvwprintw(win, row, center_col, str);
 }
 
 /* Prints centered text for menu items */
 void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_STRING],
     int highlight, int elements) {
-    int text_length = 0, center_col, i, k, cursor;
+    int text_length = 0, i, k, cursor;
 
     for (i = 0; i < elements; i++) {
         for (k = 0; k < strlen(str[i]); k++) {
@@ -45,28 +44,30 @@ void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_S
     }
 }
 
-void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
-    int run = 1, ch, i, words, win_x = win->_maxx, new_test = 1;
-    char str[1024];
-    Word_array *prompt = NULL;
+/* Prints the typing prompt onto the terminal.
+    Automatically centers, wraps, and scrolls through text */
+void print_typing_prompt(WINDOW *win, Word_array *prompt, char *user_input) {
+    int i, window_width = win->_maxx;
 
-    printw("\nPrompt: \n");
+    /* Split prompt into Strings that fit terminal width */
 
-    for (i = 0; i < words; i++) {
-        /* Will print the words centered in the screen */
-        /* Will scroll down when user finishes middle line */
-        /* Will automatically wrap text to next line based on
-            how big the console size is */
+    for (i = 0; i < prompt->number_of_words; i++) {
+        mvwprintw(win, 3, 0, "%d: %s ", i, prompt->words[i].text);
     }
 
-    /* For now prints placeholder text for the purposes of testing */
+    printw("User input %s ", strlen(user_input), user_input);
+}
 
-    /* Make "Print words function for simplicity" */
+void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
+    int run = 1, ch, i, new_test = 1, user_input_length;
+    char str[1024], *user_input = NULL;
+    Word_array *prompt = NULL;
 
     while (run) {
         if (new_test == 1) {
             clear();
 
+            /* Reset str */
             str[0] = '\0';
 
             if (mode == 0) {
@@ -87,23 +88,44 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
                 clear_word_array(prompt);
             }
 
+            /* 10 is a placeholder */
             generate_words(10, word_array, prompt);
 
-            new_test = 0;
-            for (i = 0; i < prompt->number_of_words; i++) {
-                printw("%d: %s ", i, prompt->words[i].text);
+            if (user_input != NULL) {
+                free(user_input);
             }
+
+            user_input = malloc(prompt->num_characters + 1);
+            user_input[0] = '\0';
+            user_input_length = 0;
+
+            new_test = 0;
         }
 
         ch = getch();
         if (isalpha(ch)) {
-            printw("%c", ch);
-        }
-
-        if (ch == '	') {
+            /* Ensures user does not type outside of character limit */
+            if (user_input_length < prompt->num_characters) {
+                user_input[user_input_length] = ch;
+                user_input_length++;
+                user_input[user_input_length] = '\0';
+                move(0, 0);
+                printw("Size: %d", strlen(user_input));
+            }
+        } else if (ch == KEY_BACKSPACE) {
+            if (user_input_length > 0) {
+                user_input_length--;
+                user_input[user_input_length] = '\0';
+                move(0, 0);
+                printw("Size: %d", strlen(user_input));
+            }
+        } else if (ch == '	') {
             printw("RESET TEST");
             new_test = 1;
         }
+
+        /* Prints typing prompt after all input is done processing */
+/*         print_typing_prompt(win, prompt, "Hello"); */
     }
 
     free(prompt);
@@ -123,6 +145,8 @@ int main() {
     noecho();
 
     words_file = fopen("words.txt", "r");
+
+    print_centered_text(stdscr, 4, "Loading...");
 
     if (has_colors() == FALSE) {
         print_centered_text(stdscr, 4, "Your terminal does not support color");
@@ -146,6 +170,8 @@ int main() {
     } else {
         parse_words_file(words_file, word_array);
     }
+
+    clear();
 
     while (run) {
         init_pair(2, COLOR_WHITE, COLOR_BLACK);
