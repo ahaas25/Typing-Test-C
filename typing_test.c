@@ -49,13 +49,20 @@ void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_S
 void print_typing_prompt(WINDOW *win, Word_array *prompt, char *user_input) {
     int i, window_width = win->_maxx;
 
+
+    for (i = TYPING_PROMPT_START_Y; i < TYPING_PROMPT_END_Y; i++) {
+        move(i, 0);
+        clrtoeol();
+    }
+
+    move(TYPING_PROMPT_START_Y,0);
     /* Split prompt into Strings that fit terminal width */
 
     for (i = 0; i < prompt->number_of_words; i++) {
-        mvwprintw(win, 3, 0, "%d: %s ", i, prompt->words[i].text);
+        printw("%s ", prompt->words[i].text);
     }
 
-    printw("User input %s ", strlen(user_input), user_input);
+    printw("\n%s", user_input);
 }
 
 void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
@@ -100,10 +107,11 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
             user_input_length = 0;
 
             new_test = 0;
+            print_typing_prompt(win, prompt, user_input);
         }
 
         ch = getch();
-        if (isalpha(ch)) {
+        if (isalnum(ch) || ch == ' ') {
             /* Ensures user does not type outside of character limit */
             if (user_input_length < prompt->num_characters) {
                 user_input[user_input_length] = ch;
@@ -124,11 +132,12 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
             new_test = 1;
         }
 
+        print_typing_prompt(win, prompt, user_input);
         /* Prints typing prompt after all input is done processing */
-/*         print_typing_prompt(win, prompt, "Hello"); */
     }
 
     free(prompt);
+
 }
 
 /* Main function. Creates main menu */

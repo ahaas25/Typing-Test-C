@@ -4,6 +4,8 @@
 
 #define SUCCESS 1
 #define FAILURE 0
+#define TYPING_PROMPT_START_Y 3
+#define TYPING_PROMPT_END_Y 6
 
 /* Word Structure
     length - length of word
