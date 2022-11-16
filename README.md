@@ -27,3 +27,21 @@
 
 # Credits
 Word list from https://gist.github.com/deekayen/4148741
+
+# Development Status
+
+Target for first release is the end of November. (I'm a full time student so I work on this project when I can). The goal of the first release is to have a fully functional typing test. This means parsing user input for accuracy and WPM. The analysis of user keystrokes will be added in the second release.
+
+Current status of project:
+
+Code:
+* Reading of words.txt *implemented*
+* Random word picking *implemented*
+* Different test lengths *implemented*
+* Parsing user input to be implemented
+* Saving of user data to be implemented
+
+UI:
+* Main menu *implemented*
+* Typing prompt in progress. (Currently shows generated prompt and user info and input parsing not added yet)
+* Settings menu to be implemented
