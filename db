@@ -1,0 +1,2 @@
+gcc typing_test.c utilities.c -lncurses -g
+gdb a.out

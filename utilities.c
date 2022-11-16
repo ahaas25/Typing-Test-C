@@ -74,3 +74,17 @@ int parse_words_file(FILE *words_file, Word_array *words) {
 
     return SUCCESS;
 }
+
+/* Appends first parameter to the end of end of the second parameter
+    (Does not change size of the target, assumes there is space) */
+void append_line(char *source, char *target) {
+    int length = strlen(target) + strlen(source);
+    int i, cursor = 0;
+
+    for (i = strlen(target); i < length; i++) {
+        target[i] = source[cursor];
+        cursor++;
+    }
+    target[i] = '\0'; /* End string */
+    
+}

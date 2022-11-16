@@ -7,5 +7,7 @@
 #define SUCCESS 1
 #define FAILURE 0
 char TIMED_MODES_STRING[5][MAX_STRING] = { "5s", "10s", "25s", "30s", "60s" };
+int TIMED_MODES[5] = {5, 10, 25, 30, 60};
 char WORD_MODES_STRING[5][MAX_STRING] = { "10", "25", "50", "100", "200" };
+int WORD_MODES[5] = {10, 25, 50, 100, 200};
 char MISC_STRING[3][MAX_STRING] = {"Exit", "Stats", "Settings"};

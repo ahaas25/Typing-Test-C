@@ -46,16 +46,20 @@ void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_S
 
 /* Prints the typing prompt onto the terminal.
     Automatically centers, wraps, and scrolls through text */
-void print_typing_prompt(WINDOW *win, Word_array *prompt, char *user_input) {
+void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
+    char *user_input) {
     int i, window_width = win->_maxx;
-
 
     for (i = TYPING_PROMPT_START_Y; i < TYPING_PROMPT_END_Y; i++) {
         move(i, 0);
         clrtoeol();
     }
 
-    move(TYPING_PROMPT_START_Y,0);
+    move(0, 0);
+    printw("%s", prompt_string);
+
+    move(TYPING_PROMPT_START_Y, 0);
+
     /* Split prompt into Strings that fit terminal width */
 
     for (i = 0; i < prompt->number_of_words; i++) {
@@ -68,7 +72,10 @@ void print_typing_prompt(WINDOW *win, Word_array *prompt, char *user_input) {
 void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
     int run = 1, ch, i, new_test = 1, user_input_length;
     char str[1024], *user_input = NULL;
+    char *prompt_string = NULL; /* Full prompt string */
     Word_array *prompt = NULL;
+    Word *prompt_lines; /* Array of lines for displaying */
+
 
     while (run) {
         if (new_test == 1) {
@@ -87,16 +94,15 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
                 print_centered_text(stdscr, 0, str);
             }
 
-            printw("\nPrompt:\n"); /* Temp */
-
             if (prompt == NULL) {
                 prompt = malloc(sizeof(Word_array));
             } else {
                 clear_word_array(prompt);
             }
 
-            /* 10 is a placeholder */
-            generate_words(10, word_array, prompt);
+            /* Only works for words mode for now, no timed */
+
+            generate_words(WORD_MODES[level], word_array, prompt);
 
             if (user_input != NULL) {
                 free(user_input);
@@ -107,7 +113,21 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
             user_input_length = 0;
 
             new_test = 0;
-            print_typing_prompt(win, prompt, user_input);
+
+            prompt_string = malloc(prompt->num_characters); /* For easier parsing of prompt */
+            prompt_string[0] = '\0';
+
+            /* This goes out of bounds */
+            for (i = 0; i < prompt->number_of_words; i++) {
+                append_line(prompt->words[i].text, prompt_string);
+                if (i < prompt->number_of_words - 1) {
+                    append_line(" ", prompt_string); /* Add spaces */
+                }
+            }
+
+            printf("%s", user_input);
+
+            print_typing_prompt(win, prompt, prompt_string, user_input);
         }
 
         ch = getch();
@@ -132,7 +152,18 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
             new_test = 1;
         }
 
-        print_typing_prompt(win, prompt, user_input);
+        if (!strcmp(prompt_string, user_input)) {
+            clear();
+            move(0, 0);
+            printw("Test complete!\n");
+            printw("WPM: \n");
+            printw("Accuracy:\n");
+            printw("Press tab to start a new test, or esc to return to main menu");
+            ch = getch();
+        } else {
+            print_typing_prompt(win, prompt, prompt_string, user_input);
+        }
+
         /* Prints typing prompt after all input is done processing */
     }
 
@@ -145,7 +176,7 @@ int main() {
     FILE *words_file;
     Word_array *word_array;
     int cursor_x = 0, cursor_y = 0, run = 1;
-    int ch, key;
+    int ch;
 
     word_array = malloc(sizeof(Word_array));
     initscr();
