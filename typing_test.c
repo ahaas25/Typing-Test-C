@@ -48,25 +48,33 @@ void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_S
     Automatically centers, wraps, and scrolls through text */
 void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
     char *user_input) {
-    int i, window_width = win->_maxx;
+    int i, k, window_width = win->_maxx;
 
     for (i = TYPING_PROMPT_START_Y; i < TYPING_PROMPT_END_Y; i++) {
         move(i, 0);
         clrtoeol();
     }
 
-    move(0, 0);
-    printw("%s", prompt_string);
+    /* Iterate through each character to make lines that fit in console width */
 
     move(TYPING_PROMPT_START_Y, 0);
+    printw("%s", prompt_string); /* Temporary, prints entire prompt on one line (is auto wrapped) */
+    move(TYPING_PROMPT_START_Y, 0);
 
-    /* Split prompt into Strings that fit terminal width */
 
-    for (i = 0; i < prompt->number_of_words; i++) {
-        printw("%s ", prompt->words[i].text);
+    /* Goes through each character to print if user typed it correctly or not */
+    for (i = 0; i < strlen(user_input); i++) {
+        /* If user character matches prompt character */
+        if (prompt_string[i] == user_input[i]) {
+            attron(COLOR_PAIR(3));
+            printw("%c", user_input[i]);
+            attroff(COLOR_PAIR(3));
+        } else {
+            attron(COLOR_PAIR(4));
+            printw("%c", user_input[i]);
+            attroff(COLOR_PAIR(4));
+        }
     }
-
-    printw("\n%s", user_input);
 }
 
 void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
@@ -148,18 +156,24 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
                 printw("Size: %d", strlen(user_input));
             }
         } else if (ch == '	') {
-            printw("RESET TEST");
             new_test = 1;
         }
 
-        if (!strcmp(prompt_string, user_input)) {
+        user_input_length = strlen(user_input);
+        if (user_input_length == strlen(prompt_string) && user_input[user_input_length - 1] == prompt_string[user_input_length - 1]) {
             clear();
             move(0, 0);
-            printw("Test complete!\n");
-            printw("WPM: \n");
-            printw("Accuracy:\n");
-            printw("Press tab to start a new test, or esc to return to main menu");
+            print_centered_text(win, 0, "Test Complete!");
+            print_centered_text(win, 2, "WPM: ");
+            print_centered_text(win, 3, "Accuracy: ");
+            print_centered_text(win, 4, "Press tab to start a new test, or any key to return to main menu");
             ch = getch();
+            if (ch != '	') {
+                run = 0;
+                clear();
+            } else {
+                new_test = 1;
+            }
         } else {
             print_typing_prompt(win, prompt, prompt_string, user_input);
         }
@@ -194,13 +208,16 @@ int main() {
         print_centered_text(stdscr, 6, "Press any key to continue.\n");
     } else {
         start_color();
+        init_pair(1, COLOR_RED, COLOR_WHITE);
+        init_pair(2, COLOR_WHITE, COLOR_BLACK);
+        init_pair(3, COLOR_GREEN, COLOR_BLACK);   /* Correct Text Color */
+        init_pair(4, COLOR_RED, COLOR_BLACK);   /* Incorrect Text Color */
     }
 
     if (words_file == NULL) {
         run = 0;
 
         init_color(COLOR_WHITE, 255, 255, 0);
-        init_pair(1, COLOR_RED, COLOR_WHITE);
         attron(COLOR_PAIR(1));
         print_centered_text(stdscr, 4, "Words list could not be loaded.");
         print_centered_text(stdscr, 5, "Please ensure words.txt is not missing");
@@ -214,7 +231,6 @@ int main() {
     clear();
 
     while (run) {
-        init_pair(2, COLOR_WHITE, COLOR_BLACK);
         attron(COLOR_PAIR(2));
 
         print_centered_text(stdscr, 0, "Typing Test");
