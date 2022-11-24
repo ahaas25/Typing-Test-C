@@ -1,6 +1,8 @@
 # Typing-Test-C (WIP)
 
-![image](https://user-images.githubusercontent.com/94150901/198175436-75b9f576-1b13-498b-b858-cbb1c9e7b7b6.png)
+![image](https://user-images.githubusercontent.com/94150901/203855995-8c4fc4fe-616f-4877-9b0d-47383e6b2029.png)
+
+![image](https://user-images.githubusercontent.com/94150901/203855948-fb8c7670-22c0-4489-a2a8-65e0a204bba9.png)
 
 # Summary
 
