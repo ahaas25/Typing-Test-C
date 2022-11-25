@@ -1,9 +1,3 @@
-#include <sys/ioctl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ncurses.h>
-#include <ctype.h>
 #include "typing_test.h"
 #include "utilities.h"
 
@@ -78,12 +72,13 @@ void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
 }
 
 void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
-    int run = 1, ch, i, new_test = 1, user_input_length;
+    int run = 1, ch, i, new_test = 1, user_input_length, start_timer;
+    double test_time, wpm;
     char str[1024], *user_input = NULL;
     char *prompt_string = NULL; /* Full prompt string */
     Word_array *prompt = NULL;
     Word *prompt_lines; /* Array of lines for displaying */
-
+    struct timeval timer_start, timer_stop;
 
     while (run) {
         if (new_test == 1) {
@@ -136,33 +131,50 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
             printf("%s", user_input);
 
             print_typing_prompt(win, prompt, prompt_string, user_input);
+            start_timer = 1; /* Flag timer as ready to be started */
         }
 
         ch = getch();
         if (isalnum(ch) || ch == ' ') {
             /* Ensures user does not type outside of character limit */
+            if (start_timer) {
+                gettimeofday(&timer_start, NULL);
+                start_timer = 0;
+            }
             if (user_input_length < prompt->num_characters) {
                 user_input[user_input_length] = ch;
                 user_input_length++;
                 user_input[user_input_length] = '\0';
                 move(0, 0);
-                printw("Size: %d", strlen(user_input));
             }
         } else if (ch == KEY_BACKSPACE) {
             if (user_input_length > 0) {
                 user_input_length--;
                 user_input[user_input_length] = '\0';
                 move(0, 0);
-                printw("Size: %d", strlen(user_input));
             }
         } else if (ch == '	') {
             new_test = 1;
+            start_timer = 1;
         }
 
         user_input_length = strlen(user_input);
         if (user_input_length == strlen(prompt_string) && user_input[user_input_length - 1] == prompt_string[user_input_length - 1]) {
+            gettimeofday(&timer_stop, NULL);
+            /* Convert time stamps to miliseconds */
+            long long time_start = timer_start.tv_sec * 1000LL + timer_start.tv_usec / 1000;
+            long long time_stop = timer_stop.tv_sec * 1000LL + timer_stop.tv_usec / 1000;
+
+            /* Subtract starting time from ending time to get elapsed time */
+            test_time = time_stop - time_start; 
+            test_time /= 1000; /* Convert time into seconds */
+
+            /* WPM = (Total Chars / 5) /(Total Mins) */
+            wpm = ((double) user_input_length / 5) / (test_time / 60);
             clear();
             move(0, 0);
+            str[0] = '\0'; /* Reset str */
+            printw("Time: %f WPM: %f", test_time, wpm);
             print_centered_text(win, 0, "Test Complete!");
             print_centered_text(win, 2, "WPM: ");
             print_centered_text(win, 3, "Accuracy: ");
@@ -276,7 +288,6 @@ int main() {
         default:
             break;
         }
-        printw("%d %d", cursor_x, cursor_y);
         if (ch == '\n') {
             if (cursor_x == 0 && cursor_y == 2) {
                 run = 0;
