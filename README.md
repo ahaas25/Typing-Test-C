@@ -1,8 +1,17 @@
 # Typing-Test-C (WIP)
 
-![image](https://user-images.githubusercontent.com/94150901/203855995-8c4fc4fe-616f-4877-9b0d-47383e6b2029.png)
 
-![image](https://user-images.githubusercontent.com/94150901/203855948-fb8c7670-22c0-4489-a2a8-65e0a204bba9.png)
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/94150901/204944905-326723d6-cc86-4823-8f43-d7c078fc8f89.png">
+</p>
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/94150901/204944987-a2fcd11a-13b5-49a8-831a-5c143454bf93.png">
+</p>
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/94150901/204943113-6448515a-ff00-4cc8-81fd-262572be6c6a.png">
+</p>
 
 # Summary
 
@@ -11,7 +20,7 @@
 * Timed Mode: 5, 10, 15, 30, and 60s
 * Word Mode: 10, 25, 50, and 100 Words
 * Focuses on User's Typing Style and Provides Insights
-* Similar to my Typing-Teacher project, however this is more focused on analyzing user data, rather than UI.
+* Similar to my Typing-Teacher project, however this is more focused on analyzing user data, rather than UI, which was the focus of that project.
 * Uses ncurses library
 
 # Objectives
@@ -24,15 +33,27 @@
 
 * Download source files
 * Install ncurses (If not already installed)
-* Compile Using ```"gcc gcc typing_test.c -lncurses"```
-* OR: Run "make" using Makefile
+* Compile Using ```gcc gcc typing_test.c -lncurses```
+* OR: Run ```make``` using Makefile
+
+# How To Run
+After obtaining your compiled Typing-Test-C program, simply run the program from your terminal. Keep in mind this program requires a ```words.txt``` file in the same directory as itself to generate word prompts.
+
+Note: This program has only been tested in a color-supporting terminal. If you experience unexpected behavior, ensure your terminal supports color and text highlighting.
 
 # Credits
 Word list from https://gist.github.com/deekayen/4148741
 
 # Development Status
 
+First release goal:
 Target for first release is the end of November. (I'm a full time student so I work on this project when I can). The goal of the first release is to have a fully functional typing test. This means parsing user input for accuracy and WPM. The analysis of user keystrokes will be added in the second release.
+
+First release goal reached!
+Find it [here](https://github.com/ahaas25/Typing-Test-C/releases/tag/milestone)
+
+Second release goal:
+The second release goal for this project is to have a much more refined project. I hope to have all modes implemented, the UI to automatically wrap the console size, and user keystroke analysis if time permits. I'm hoping to have this release out by early January. (It's finals season so I won't have much time to work on this project until late December)
 
 Current status of project:
 
@@ -40,10 +61,13 @@ Code:
 * Reading of words.txt *implemented*
 * Random word picking *implemented*
 * Different test lengths *implemented*
-* Parsing user input to be implemented
-* Saving of user data to be implemented
+* Timed Tests to be implemented
+* Test results screen *implemeted*
+* Saving user stats to be implemented
+* Per-key stats to be implemented
 
 UI:
 * Main menu *implemented*
-* Typing prompt in progress. (Currently shows generated prompt and user info and input parsing not added yet)
+* Typing prompt *in progress*
+* Stats menu to be implemented
 * Settings menu to be implemented
