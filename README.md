@@ -33,7 +33,7 @@
 
 * Download source files
 * Install ncurses (If not already installed)
-* Compile Using ```gcc gcc typing_test.c -lncurses```
+* Compile Using ```gcc typing_test.c utilities.c -lncurses```
 * OR: Run ```make``` using Makefile
 
 # How To Run
