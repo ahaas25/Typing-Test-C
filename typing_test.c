@@ -38,6 +38,8 @@ void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_S
     }
 }
 
+
+
 /* Prints the typing prompt onto the terminal.
     Automatically centers, wraps, and scrolls through text */
 void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
@@ -71,18 +73,21 @@ void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
     }
 }
 
+
+
 void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
     int run = 1, ch, i, new_test = 1, user_input_length, start_timer;
-    double test_time, wpm;
-    char str[1024], *user_input = NULL;
+    double test_time, wpm, accuracy;
+    char str[1024], temp[24], *user_input = NULL;
     char *prompt_string = NULL; /* Full prompt string */
     Word_array *prompt = NULL;
     Word *prompt_lines; /* Array of lines for displaying */
     struct timeval timer_start, timer_stop;
-
+    curs_set(1);
     while (run) {
         if (new_test == 1) {
             clear();
+            accuracy = 0;
 
             /* Reset str */
             str[0] = '\0';
@@ -135,27 +140,35 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
         }
 
         ch = getch();
-        if (isalnum(ch) || ch == ' ') {
-            /* Ensures user does not type outside of character limit */
+        if (isalnum(ch) || ch == ' ' || ch == '\'') { /* If typing prompt character */
             if (start_timer) {
                 gettimeofday(&timer_start, NULL);
                 start_timer = 0;
             }
-            if (user_input_length < prompt->num_characters) {
+            if (user_input_length < prompt->num_characters) { /* If within prompt length */
+                if (ch == prompt_string[user_input_length]) {
+                    accuracy++;
+                }
                 user_input[user_input_length] = ch;
                 user_input_length++;
                 user_input[user_input_length] = '\0';
                 move(0, 0);
             }
-        } else if (ch == KEY_BACKSPACE) {
+        } else if (ch == KEY_BACKSPACE) { /* Backspace */
             if (user_input_length > 0) {
                 user_input_length--;
                 user_input[user_input_length] = '\0';
+                if (accuracy > 0) {
+                    accuracy--; /* Account for user deleting line */
+                } /* Do it this way or calculate at the end? */
                 move(0, 0);
             }
         } else if (ch == '	') {
             new_test = 1;
             start_timer = 1;
+        } else if (ch == 27) { /* Esc */
+            run = 0;
+            clear();
         }
 
         user_input_length = strlen(user_input);
@@ -165,20 +178,59 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
             long long time_start = timer_start.tv_sec * 1000LL + timer_start.tv_usec / 1000;
             long long time_stop = timer_stop.tv_sec * 1000LL + timer_stop.tv_usec / 1000;
 
+            /* Calculate accuracy */
+            accuracy = (accuracy / user_input_length) * 100;
+
             /* Subtract starting time from ending time to get elapsed time */
-            test_time = time_stop - time_start; 
+            test_time = time_stop - time_start;
             test_time /= 1000; /* Convert time into seconds */
 
             /* WPM = (Total Chars / 5) /(Total Mins) */
-            wpm = ((double) user_input_length / 5) / (test_time / 60);
+            wpm = ((double)user_input_length / 5) / (test_time / 60);
+
             clear();
-            move(0, 0);
-            str[0] = '\0'; /* Reset str */
-            printw("Time: %f WPM: %f", test_time, wpm);
-            print_centered_text(win, 0, "Test Complete!");
-            print_centered_text(win, 2, "WPM: ");
-            print_centered_text(win, 3, "Accuracy: ");
-            print_centered_text(win, 4, "Press tab to start a new test, or any key to return to main menu");
+
+            /* Print end screen */
+
+            print_centered_text(stdscr, 0, str); /* Print test type */
+            curs_set(0);
+            print_centered_text(win, 2, "Test Complete!");
+
+            /* Note, console resizing support is planned. */
+
+            /* Generate WPM String */
+            str[0] = '\0';
+            append_line("WPM: ", str);
+            gcvt(wpm, 5, temp);
+            append_line(temp, str);
+            print_centered_text(win, 4, str);
+
+            /* Generate Accuracy String */
+            str[0] = '\0';
+            append_line("Accuracy: ", str);
+            gcvt(accuracy, 5, temp);
+            append_line(temp, str);
+            append_line("\%%", str);
+            print_centered_text(win, 5, str);
+
+            /* Generate Time String */
+            str[0] = '\0';
+            append_line("Time: ", str);
+            gcvt(test_time, 5, temp);
+            append_line(temp, str);
+            append_line("s", str);
+            print_centered_text(win, 6, str);
+
+            /* Generate Characters String */
+            str[0] = '\0';
+            append_line("Characters: ", str);
+            sprintf(temp, "%d", user_input_length);
+            append_line(temp, str);
+            print_centered_text(win, 7, str);
+
+            print_centered_text(win, 19, "Press tab to start a new test, or any key to return to main menu");
+
+            /* Wait on user input */
             ch = getch();
             if (ch != '	') {
                 run = 0;
@@ -187,10 +239,9 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
                 new_test = 1;
             }
         } else {
+            /* Prints typing prompt after all input is done processing */
             print_typing_prompt(win, prompt, prompt_string, user_input);
         }
-
-        /* Prints typing prompt after all input is done processing */
     }
 
     free(prompt);
@@ -244,7 +295,7 @@ int main() {
 
     while (run) {
         attron(COLOR_PAIR(2));
-
+        curs_set(0);
         print_centered_text(stdscr, 0, "Typing Test");
         print_centered_text(stdscr, 1, "By Aidan Haas");
         print_centered_text(stdscr, 3, "Modes");

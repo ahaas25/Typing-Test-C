@@ -1,5 +1,4 @@
 #include "utilities.h"
-#include <sys/time.h>
 
 /* Clears word array given in parameters */
 void clear_word_array(Word_array *array) {
@@ -43,7 +42,6 @@ int generate_words(int number_of_words, Word_array *words, Word_array *to_return
 
     return SUCCESS;
 }
-
 
 /* This will dynamically allocate memory to a 2d char array of all the words
     in words.txt */
