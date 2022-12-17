@@ -38,8 +38,6 @@ void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_S
     }
 }
 
-
-
 /* Prints the typing prompt onto the terminal.
     Automatically centers, wraps, and scrolls through text */
 void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
@@ -52,7 +50,6 @@ void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
     }
 
     /* Iterate through each character to make lines that fit in console width */
-
     move(TYPING_PROMPT_START_Y, 0);
     printw("%s", prompt_string); /* Temporary, prints entire prompt on one line (is auto wrapped) */
     move(TYPING_PROMPT_START_Y, 0);
@@ -72,8 +69,6 @@ void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
         }
     }
 }
-
-
 
 void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
     int run = 1, ch, i, new_test = 1, user_input_length, start_timer;
@@ -245,7 +240,57 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
     }
 
     free(prompt);
+    clear();
+}
 
+/* Draws settings UI to console */
+/* Placeholder, will work on next */
+void settings_ui(WINDOW *win) {
+    char ch;
+    clear();
+    print_centered_text(win, 0, "Settings");
+
+    print_centered_text(win, 3, "Controls");
+    print_centered_text(win, 4, "Tab - Reset Test");
+    print_centered_text(win, 5, "Esc - End Test");
+
+    print_centered_text(win, 7, "Themes");
+    print_centered_text(win, 8, "Default");
+
+    print_centered_text(win, 10, "Statistics");
+    print_centered_text(win, 11, "Reset Stats");
+
+    print_centered_text(win, 13, "Return to Menu");
+    refresh();
+
+    ch = getchar();
+    clear();
+}
+
+/* Draws statistics UI to console */
+/* Placeholder, will work on next */
+void stat_ui(WINDOW *win) {
+    char ch;
+    clear();
+    print_centered_text(win, 0, "Statistics");
+
+    print_centered_text(win, 3, "Best WPM:");
+    print_centered_text(win, 4, "Average WPM:");
+    print_centered_text(win, 5, "Average Accuracy:");
+
+    print_centered_text(win, 7, "Tests Completed:");
+    print_centered_text(win, 8, "Time Spent Typing: ");
+
+    print_centered_text(win, 10, "10 Word Test: ");
+    print_centered_text(win, 11, "25 Word Test: ");
+    print_centered_text(win, 12, "50 Word Test: ");
+    print_centered_text(win, 13, "100 Word Test: ");
+
+    print_centered_text(win, 15, "Return to Menu");
+    refresh();
+
+    ch = getchar();
+    clear();
 }
 
 /* Main function. Creates main menu */
@@ -262,7 +307,6 @@ int main() {
     noecho();
 
     words_file = fopen("words.txt", "r");
-
     print_centered_text(stdscr, 4, "Loading...");
 
     if (has_colors() == FALSE) {
@@ -341,16 +385,23 @@ int main() {
         }
         if (ch == '\n') {
             if (cursor_x == 0 && cursor_y == 2) {
+                /* Exit */
                 run = 0;
+            } else if (cursor_x == 1) {
+                /* Stats */
+                stat_ui(stdscr);
+            } else if (cursor_x == 2) {
+                /* Settings */
+                settings_ui(stdscr);
             } else if (cursor_y == 1 || cursor_y == 0) {
                 typing_ui(stdscr, cursor_x, cursor_y, word_array);
+                clear();
             }
         }
 
     }
 
     /* Exiting */
-
     refresh();
     endwin();
 
