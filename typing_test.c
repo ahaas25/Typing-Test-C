@@ -387,10 +387,10 @@ int main() {
             if (cursor_x == 0 && cursor_y == 2) {
                 /* Exit */
                 run = 0;
-            } else if (cursor_x == 1) {
+            } else if (cursor_x == 1 && cursor_y == 2) {
                 /* Stats */
                 stat_ui(stdscr);
-            } else if (cursor_x == 2) {
+            } else if (cursor_x == 2 && cursor_y == 2) {
                 /* Settings */
                 settings_ui(stdscr);
             } else if (cursor_y == 1 || cursor_y == 0) {
