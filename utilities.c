@@ -73,6 +73,36 @@ int parse_words_file(FILE *words_file, Word_array *words) {
     return SUCCESS;
 }
 
+/* Creates empty stats file */
+int create_stats_file(FILE *stats_file) {
+    /* Numerical Stats */
+    fputs("Best WPM: 0\n", stats_file);
+    fputs("10w: 0\n", stats_file);
+    fputs("25w: 0\n", stats_file);
+    fputs("50w: 0\n", stats_file);
+    fputs("100w: 0\n", stats_file);
+    fputs("Tests completed: 0\n", stats_file);
+
+    /* Dynamic Stats (Used for calculating average WPM, Accuracy, etc) */
+    fputs("Characters typed: 0\n", stats_file);
+    fputs("Characters correct: 0\n", stats_file);
+    fputs("Time typed: 0\n", stats_file);
+    fclose(stats_file);
+
+    return SUCCESS;
+}
+
+int load_stats(FILE *stats_file, Stat_struct *stats) {
+    /* Placeholder */
+}
+
+int save_stats(FILE *stats_file, Stat_struct *stats) {
+    /* Placeholder */
+
+    fclose(stats_file);
+}
+
+
 /* Appends first parameter to the end of end of the second parameter
     (Does not change size of the target, assumes there is space) */
 void append_line(char *source, char *target) {

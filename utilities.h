@@ -25,7 +25,16 @@ typedef struct {
     Word *words;
 } Word_array;
 
+typedef struct {
+    int best_wpm, w_10, w_25, w_50, w_100;
+    int tests_complete, chars_typed, chars_correct;
+    double time_typed; /* In seconds */
+} Stat_struct;
+
 void clear_word_array(Word_array *array);
 int generate_words(int num_words, Word_array *words, Word_array *to_return);
 int parse_words_file(FILE *words_file, Word_array *words);
+int create_stats_file(FILE *stats_file);
+int load_stats(FILE *stats_file, Stat_struct *stats);
+int save_stats(FILE *stats_file, Stat_struct *stats);
 void append_line(char *source, char *target);

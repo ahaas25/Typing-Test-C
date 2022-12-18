@@ -295,8 +295,9 @@ void stat_ui(WINDOW *win) {
 
 /* Main function. Creates main menu */
 int main() {
-    FILE *words_file;
+    FILE *words_file, *stats_file;
     Word_array *word_array;
+    Stat_struct stats;
     int cursor_x = 0, cursor_y = 0, run = 1;
     int ch;
 
@@ -306,8 +307,9 @@ int main() {
     keypad(stdscr, TRUE);
     noecho();
 
-    words_file = fopen("words.txt", "r");
     print_centered_text(stdscr, 4, "Loading...");
+    words_file = fopen("words.txt", "r");
+    stats_file = fopen("stats", "r");
 
     if (has_colors() == FALSE) {
         print_centered_text(stdscr, 4, "Your terminal does not support color");
@@ -334,6 +336,18 @@ int main() {
     } else {
         parse_words_file(words_file, word_array);
     }
+
+    /* Creates a new stats file if one is not detected */
+    if (stats_file == NULL) {
+        stats_file = fopen("stats", "w");
+        create_stats_file(stats_file);
+        stats_file = fopen("stats", "r");
+    }
+
+    /* Load stats from stats file */
+    /* These will be modified as the program runs and the stats file will be updated
+        upon program exit */
+    load_stats(stats_file, &stats);
 
     clear();
 
@@ -404,6 +418,9 @@ int main() {
     /* Exiting */
     refresh();
     endwin();
+    
+    /* Saves stats and exits file */
+    save_stats(stats_file, &stats);
 
     return 0;
 }
