@@ -7,6 +7,15 @@
 #define FAILURE 0
 #define TYPING_PROMPT_START_Y 3
 #define TYPING_PROMPT_END_Y 6
+#define BEST_WPM 0
+#define W_10 1
+#define W_25 2
+#define W_50 3
+#define W_100 4
+#define TESTS_COMPLETE 5
+#define CHARS_TYPED 6
+#define CHARS_CORRECT 7
+#define TIME_TYPED 8
 
 /* Word Structure
     length - length of word
@@ -26,9 +35,7 @@ typedef struct {
 } Word_array;
 
 typedef struct {
-    int best_wpm, w_10, w_25, w_50, w_100;
-    int tests_complete, chars_typed, chars_correct;
-    double time_typed; /* In seconds */
+    double data[9];
 } Stat_struct;
 
 void clear_word_array(Word_array *array);

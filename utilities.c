@@ -75,25 +75,30 @@ int parse_words_file(FILE *words_file, Word_array *words) {
 
 /* Creates empty stats file */
 int create_stats_file(FILE *stats_file) {
-    /* Numerical Stats */
-    fputs("Best WPM: 0\n", stats_file);
-    fputs("10w: 0\n", stats_file);
-    fputs("25w: 0\n", stats_file);
-    fputs("50w: 0\n", stats_file);
-    fputs("100w: 0\n", stats_file);
-    fputs("Tests completed: 0\n", stats_file);
+    int i;
+    
+    for (i = 0; i < 9; i++) {
+        fputs("0\n", stats_file);
+    }
 
-    /* Dynamic Stats (Used for calculating average WPM, Accuracy, etc) */
-    fputs("Characters typed: 0\n", stats_file);
-    fputs("Characters correct: 0\n", stats_file);
-    fputs("Time typed: 0\n", stats_file);
     fclose(stats_file);
-
     return SUCCESS;
 }
 
 int load_stats(FILE *stats_file, Stat_struct *stats) {
-    /* Placeholder */
+    int i = 0;
+    int temp_stat;
+    char buf[256];
+
+    while (fgets(buf, sizeof(buf), stats_file) != NULL) {
+        sscanf(buf, "%d", &temp_stat);
+        stats->data[i] = temp_stat;
+        i++;
+    }
+
+    fclose(stats_file);
+
+    return SUCCESS;
 }
 
 int save_stats(FILE *stats_file, Stat_struct *stats) {
@@ -114,5 +119,5 @@ void append_line(char *source, char *target) {
         cursor++;
     }
     target[i] = '\0'; /* End string */
-    
+
 }

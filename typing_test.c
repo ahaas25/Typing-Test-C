@@ -269,17 +269,44 @@ void settings_ui(WINDOW *win) {
 
 /* Draws statistics UI to console */
 /* Placeholder, will work on next */
-void stat_ui(WINDOW *win) {
-    char ch;
+void stat_ui(WINDOW *win, Stat_struct *stats) {
+    int row = 0;
+    char ch, temp_str[MAX_STRING], temp_num[MAX_STRING];
     clear();
-    print_centered_text(win, 0, "Statistics");
 
-    print_centered_text(win, 3, "Best WPM:");
-    print_centered_text(win, 4, "Average WPM:");
-    print_centered_text(win, 5, "Average Accuracy:");
+    temp_str[0] = '\0';
 
-    print_centered_text(win, 7, "Tests Completed:");
-    print_centered_text(win, 8, "Time Spent Typing: ");
+    print_centered_text(win, row, "Statistics");
+
+    row += 3;
+    append_line("Best WPM: ", temp_str);
+    gcvt(stats->data[BEST_WPM], 5, temp_num);
+    append_line(temp_num, temp_str);
+    print_centered_text(win, row, temp_str);
+    row++;
+    temp_str[0] = '\0';
+
+    append_line("Average WPM: ", temp_str);
+    /* Calculate here */
+    append_line(temp_num, temp_str);
+    print_centered_text(win, row, temp_str);
+    row++;
+    temp_str[0] = '\0';
+
+    append_line("Tests Completed: ", temp_str);
+    gcvt(stats->data[TESTS_COMPLETE], 5, temp_num);
+    append_line(temp_num, temp_str);
+    print_centered_text(win, row, temp_str);
+    row++;
+    temp_str[0] = '\0';
+
+    append_line("Time Spent Typing: ", temp_str);
+    gcvt(stats->data[TIME_TYPED], 5, temp_num);
+    append_line(temp_num, temp_str);
+    print_centered_text(win, row, temp_str);
+    row++;
+    temp_str[0] = '\0';
+
 
     print_centered_text(win, 10, "10 Word Test: ");
     print_centered_text(win, 11, "25 Word Test: ");
@@ -346,7 +373,7 @@ int main() {
 
     /* Load stats from stats file */
     /* These will be modified as the program runs and the stats file will be updated
-        upon program exit */
+       upon program exit. */
     load_stats(stats_file, &stats);
 
     clear();
@@ -403,7 +430,7 @@ int main() {
                 run = 0;
             } else if (cursor_x == 1 && cursor_y == 2) {
                 /* Stats */
-                stat_ui(stdscr);
+                stat_ui(stdscr, &stats);
             } else if (cursor_x == 2 && cursor_y == 2) {
                 /* Settings */
                 settings_ui(stdscr);
@@ -418,9 +445,10 @@ int main() {
     /* Exiting */
     refresh();
     endwin();
-    
-    /* Saves stats and exits file */
-    save_stats(stats_file, &stats);
+
+    /* Saves stats and closes file */
+    /* Open stats first */
+    /* save_stats(stats_file, &stats); */
 
     return 0;
 }

@@ -7,8 +7,7 @@
 #include "utilities.h"
 #include "typing_test.h"
 
-
-int main() {
+void debug_words() {
     FILE *words_file;
     words_file = fopen("words.txt", "r");
     Word_array word_array, return_words;
@@ -29,5 +28,24 @@ int main() {
     for (i = 0; i < words_to_generate; i++) {
         printf("Generated Word: %s %d\n", return_words.words[i].text, return_words.words[i].length);
     }
+}
+
+void debug_stats() {
+    FILE *stats_file;
+    Stat_struct x;
+    char buf[256], temp[256];
+    int temp_stat;
+    stats_file = fopen("stats", "r");
+
+    load_stats(stats_file, &x);
+    
+    for (int i = 0; i < 9; i++) {
+        printf("%d\n", x.data[i]);
+    }
 
 }
+
+int main() {
+    debug_stats();
+}
+
