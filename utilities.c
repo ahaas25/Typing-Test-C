@@ -76,8 +76,8 @@ int parse_words_file(FILE *words_file, Word_array *words) {
 /* Creates empty stats file */
 int create_stats_file(FILE *stats_file) {
     int i;
-    
-    for (i = 0; i < 9; i++) {
+
+    for (i = 0; i < NUM_STATS; i++) {
         fputs("0\n", stats_file);
     }
 
@@ -85,6 +85,7 @@ int create_stats_file(FILE *stats_file) {
     return SUCCESS;
 }
 
+/* Loads user data from stats file located in same directory as program */
 int load_stats(FILE *stats_file, Stat_struct *stats) {
     int i = 0;
     int temp_stat;
@@ -101,8 +102,13 @@ int load_stats(FILE *stats_file, Stat_struct *stats) {
     return SUCCESS;
 }
 
+/* Saves user data to stats file located in same directory as program */
 int save_stats(FILE *stats_file, Stat_struct *stats) {
-    /* Placeholder */
+    int i;
+
+    for (i = 0; i < NUM_STATS; i++) {
+        fprintf(stats_file, "%f\n", stats->data[i]);
+    }
 
     fclose(stats_file);
 }

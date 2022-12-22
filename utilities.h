@@ -8,14 +8,16 @@
 #define TYPING_PROMPT_START_Y 3
 #define TYPING_PROMPT_END_Y 6
 #define BEST_WPM 0
-#define W_10 1
-#define W_25 2
-#define W_50 3
-#define W_100 4
-#define TESTS_COMPLETE 5
-#define CHARS_TYPED 6
-#define CHARS_CORRECT 7
-#define TIME_TYPED 8
+#define W_5 1
+#define W_10 2
+#define W_25 3
+#define W_50 4
+#define W_100 5
+#define TESTS_COMPLETE 6
+#define CHARS_TYPED 7
+#define CHARS_CORRECT 8
+#define TIME_TYPED 9
+#define NUM_STATS 10
 
 /* Word Structure
     length - length of word
@@ -35,7 +37,7 @@ typedef struct {
 } Word_array;
 
 typedef struct {
-    double data[9];
+    double data[NUM_STATS];
 } Stat_struct;
 
 void clear_word_array(Word_array *array);

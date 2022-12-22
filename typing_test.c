@@ -70,7 +70,7 @@ void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
     }
 }
 
-void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
+void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_struct *stats) {
     int run = 1, ch, i, new_test = 1, user_input_length, start_timer;
     double test_time, wpm, accuracy;
     char str[1024], temp[24], *user_input = NULL;
@@ -78,11 +78,11 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
     Word_array *prompt = NULL;
     Word *prompt_lines; /* Array of lines for displaying */
     struct timeval timer_start, timer_stop;
-    curs_set(1);
     while (run) {
         if (new_test == 1) {
             clear();
             accuracy = 0;
+            curs_set(1);
 
             /* Reset str */
             str[0] = '\0';
@@ -225,6 +225,43 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array) {
 
             print_centered_text(win, 19, "Press tab to start a new test, or any key to return to main menu");
 
+            stats->data[TESTS_COMPLETE]++;
+
+            switch (level) {
+            case 0:
+                if (stats->data[W_5] < (int)wpm) {
+                    stats->data[W_5] = (int)wpm;
+                    print_centered_text(win, 17, "New High Score!");
+                }
+                break;
+            case 1:
+                if (stats->data[W_10] < (int)wpm) {
+                    stats->data[W_10] = (int)wpm;
+                    print_centered_text(win, 17, "New High Score!");
+                }
+                break;
+            case 2:
+                if (stats->data[W_25] < (int)wpm) {
+                    stats->data[W_25] = (int)wpm;
+                    print_centered_text(win, 17, "New High Score!");
+                }
+                break;
+            case 3:
+                if (stats->data[W_50] < (int)wpm) {
+                    stats->data[W_50] = (int)wpm;
+                    print_centered_text(win, 17, "New High Score!");
+                }
+                break;
+            case 4:
+                if (stats->data[W_100] < (int)wpm) {
+                    stats->data[W_100] = (int)wpm;
+                    print_centered_text(win, 17, "New High Score!");
+                }
+                break;
+            }
+
+
+
             /* Wait on user input */
             ch = getch();
             if (ch != '	') {
@@ -304,14 +341,43 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
     gcvt(stats->data[TIME_TYPED], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
+    row += 2;
+    temp_str[0] = '\0';
+
+    append_line("5 Word Test: ", temp_str);
+    gcvt(stats->data[W_5], 5, temp_num);
+    append_line(temp_num, temp_str);
+    print_centered_text(win, row, temp_str);
     row++;
     temp_str[0] = '\0';
 
+    append_line("10 Word Test: ", temp_str);
+    gcvt(stats->data[W_10], 5, temp_num);
+    append_line(temp_num, temp_str);
+    print_centered_text(win, row, temp_str);
+    row++;
+    temp_str[0] = '\0';
 
-    print_centered_text(win, 10, "10 Word Test: ");
-    print_centered_text(win, 11, "25 Word Test: ");
-    print_centered_text(win, 12, "50 Word Test: ");
-    print_centered_text(win, 13, "100 Word Test: ");
+    append_line("25 Word Test: ", temp_str);
+    gcvt(stats->data[W_25], 5, temp_num);
+    append_line(temp_num, temp_str);
+    print_centered_text(win, row, temp_str);
+    row++;
+    temp_str[0] = '\0';
+
+    append_line("50 Word Test: ", temp_str);
+    gcvt(stats->data[W_50], 5, temp_num);
+    append_line(temp_num, temp_str);
+    print_centered_text(win, row, temp_str);
+    row++;
+    temp_str[0] = '\0';
+
+    append_line("100 Word Test: ", temp_str);
+    gcvt(stats->data[W_100], 5, temp_num);
+    append_line(temp_num, temp_str);
+    print_centered_text(win, row, temp_str);
+    row++;
+    temp_str[0] = '\0';
 
     print_centered_text(win, 15, "Return to Menu");
     refresh();
@@ -435,7 +501,7 @@ int main() {
                 /* Settings */
                 settings_ui(stdscr);
             } else if (cursor_y == 1 || cursor_y == 0) {
-                typing_ui(stdscr, cursor_x, cursor_y, word_array);
+                typing_ui(stdscr, cursor_x, cursor_y, word_array, &stats);
                 clear();
             }
         }
@@ -448,7 +514,8 @@ int main() {
 
     /* Saves stats and closes file */
     /* Open stats first */
-    /* save_stats(stats_file, &stats); */
+    stats_file = fopen("stats", "w");
+    save_stats(stats_file, &stats);
 
     return 0;
 }
