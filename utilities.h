@@ -37,7 +37,7 @@ typedef struct {
 } Word_array;
 
 typedef struct {
-    double data[NUM_STATS];
+    int data[NUM_STATS];
 } Stat_struct;
 
 void clear_word_array(Word_array *array);
@@ -47,3 +47,4 @@ int create_stats_file(FILE *stats_file);
 int load_stats(FILE *stats_file, Stat_struct *stats);
 int save_stats(FILE *stats_file, Stat_struct *stats);
 void append_line(char *source, char *target);
+int update_max_wpm(Stat_struct *stats);

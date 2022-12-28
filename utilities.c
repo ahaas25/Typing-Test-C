@@ -107,10 +107,24 @@ int save_stats(FILE *stats_file, Stat_struct *stats) {
     int i;
 
     for (i = 0; i < NUM_STATS; i++) {
-        fprintf(stats_file, "%f\n", stats->data[i]);
+        fprintf(stats_file, "%d\n", stats->data[i]);
     }
 
     fclose(stats_file);
+
+    return SUCCESS;
+}
+
+/* Finds highest WPM score */
+int update_max_wpm(Stat_struct *stats) {
+    int i, max = stats->data[W_5];
+    for (i = W_5; i <= W_100; i++) {
+        if (max < stats->data[i]) {
+            max = stats->data[i];
+        }
+    }
+    stats->data[BEST_WPM] = max;
+    return SUCCESS;
 }
 
 

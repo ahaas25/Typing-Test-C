@@ -8,6 +8,10 @@ void print_centered_text(WINDOW *win, int row, char *str) {
     mvwprintw(win, row, center_col, str);
 }
 
+/* To do */
+/* Track misinputs? */
+/* Add timed mode */
+
 /* Prints centered text for menu items */
 void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_STRING],
     int highlight, int elements) {
@@ -71,8 +75,8 @@ void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
 }
 
 void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_struct *stats) {
-    int run = 1, ch, i, new_test = 1, user_input_length, start_timer;
-    double test_time, wpm, accuracy;
+    int run = 1, ch, i, new_test = 1, user_input_length, start_timer, line = 4;
+    double test_time, wpm, wpm_raw, accuracy;
     char str[1024], temp[24], *user_input = NULL;
     char *prompt_string = NULL; /* Full prompt string */
     Word_array *prompt = NULL;
@@ -173,15 +177,23 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
             long long time_start = timer_start.tv_sec * 1000LL + timer_start.tv_usec / 1000;
             long long time_stop = timer_stop.tv_sec * 1000LL + timer_stop.tv_usec / 1000;
 
-            /* Calculate accuracy */
-            accuracy = (accuracy / user_input_length) * 100;
+
 
             /* Subtract starting time from ending time to get elapsed time */
             test_time = time_stop - time_start;
             test_time /= 1000; /* Convert time into seconds */
 
             /* WPM = (Total Chars / 5) /(Total Mins) */
-            wpm = ((double)user_input_length / 5) / (test_time / 60);
+            wpm = (accuracy / 5) / (test_time / 60);
+            wpm_raw = ((double)user_input_length / 5) / (test_time / 60);
+
+            /* Update stats */
+            stats->data[TESTS_COMPLETE]++;
+            stats->data[CHARS_TYPED] += user_input_length;
+            stats->data[CHARS_CORRECT] += accuracy;
+
+            /* Calculate accuracy */
+            accuracy = (accuracy / user_input_length) * 100;
 
             clear();
 
@@ -198,7 +210,14 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
             append_line("WPM: ", str);
             gcvt(wpm, 5, temp);
             append_line(temp, str);
-            print_centered_text(win, 4, str);
+            print_centered_text(win, line++, str);
+
+            str[0] = '\0';
+            append_line("Raw WPM: ", str);
+            gcvt(wpm_raw, 5, temp);
+            append_line(temp, str);
+            print_centered_text(win, line++, str);
+
 
             /* Generate Accuracy String */
             str[0] = '\0';
@@ -206,7 +225,7 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
             gcvt(accuracy, 5, temp);
             append_line(temp, str);
             append_line("\%%", str);
-            print_centered_text(win, 5, str);
+            print_centered_text(win, line++, str);
 
             /* Generate Time String */
             str[0] = '\0';
@@ -214,48 +233,51 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
             gcvt(test_time, 5, temp);
             append_line(temp, str);
             append_line("s", str);
-            print_centered_text(win, 6, str);
+            print_centered_text(win, line++, str);
 
             /* Generate Characters String */
             str[0] = '\0';
             append_line("Characters: ", str);
             sprintf(temp, "%d", user_input_length);
             append_line(temp, str);
-            print_centered_text(win, 7, str);
+            print_centered_text(win, line++, str);
 
             print_centered_text(win, 19, "Press tab to start a new test, or any key to return to main menu");
-
-            stats->data[TESTS_COMPLETE]++;
 
             switch (level) {
             case 0:
                 if (stats->data[W_5] < (int)wpm) {
                     stats->data[W_5] = (int)wpm;
                     print_centered_text(win, 17, "New High Score!");
+                    update_max_wpm(stats);
                 }
                 break;
             case 1:
                 if (stats->data[W_10] < (int)wpm) {
                     stats->data[W_10] = (int)wpm;
                     print_centered_text(win, 17, "New High Score!");
+                    update_max_wpm(stats);
                 }
                 break;
             case 2:
                 if (stats->data[W_25] < (int)wpm) {
                     stats->data[W_25] = (int)wpm;
                     print_centered_text(win, 17, "New High Score!");
+                    update_max_wpm(stats);
                 }
                 break;
             case 3:
                 if (stats->data[W_50] < (int)wpm) {
                     stats->data[W_50] = (int)wpm;
                     print_centered_text(win, 17, "New High Score!");
+                    update_max_wpm(stats);
                 }
                 break;
             case 4:
                 if (stats->data[W_100] < (int)wpm) {
                     stats->data[W_100] = (int)wpm;
                     print_centered_text(win, 17, "New High Score!");
+                    update_max_wpm(stats);
                 }
                 break;
             }
@@ -308,6 +330,7 @@ void settings_ui(WINDOW *win) {
 /* Placeholder, will work on next */
 void stat_ui(WINDOW *win, Stat_struct *stats) {
     int row = 0;
+    double temp;
     char ch, temp_str[MAX_STRING], temp_num[MAX_STRING];
     clear();
 
@@ -330,8 +353,24 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
     row++;
     temp_str[0] = '\0';
 
+    append_line("Average Accuracy: ", temp_str);
+    temp = ((double)stats->data[CHARS_CORRECT] / (double)stats->data[CHARS_TYPED]) * 100;
+    gcvt(temp, 5, temp_num);
+    append_line(temp_num, temp_str);
+    append_line("\%%", temp_str);
+    print_centered_text(win, row, temp_str);
+    row++;
+    temp_str[0] = '\0';
+
     append_line("Tests Completed: ", temp_str);
     gcvt(stats->data[TESTS_COMPLETE], 5, temp_num);
+    append_line(temp_num, temp_str);
+    print_centered_text(win, row, temp_str);
+    row++;
+    temp_str[0] = '\0';
+
+    append_line("Keys Typed: ", temp_str);
+    gcvt(stats->data[CHARS_TYPED], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
     row++;
@@ -376,10 +415,10 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
     gcvt(stats->data[W_100], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
-    row++;
+    row += 2;
     temp_str[0] = '\0';
 
-    print_centered_text(win, 15, "Return to Menu");
+    print_centered_text(win, row, "Return to Menu");
     refresh();
 
     ch = getchar();
