@@ -10,7 +10,8 @@ void print_centered_text(WINDOW *win, int row, char *str) {
 
 /* To do */
 /* Track misinputs? */
-/* Add timed mode */
+/* Fix stats screen on timed mode */
+/* Polish timed mode code */
 
 /* Prints centered text for menu items */
 void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_STRING],
@@ -75,15 +76,17 @@ void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
 }
 
 void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_struct *stats) {
-    int run = 1, ch, i, new_test = 1, user_input_length, start_timer, line = 4;
-    double test_time, wpm, wpm_raw, accuracy;
+    int run = 1, ch, i, new_test = 1, user_input_length, start_timer, line = 4, end_test;
+    int timed_reserved_accuracy, timed_reserved_characters;
+    double test_time, wpm, wpm_raw, accuracy, elapsed_time;
+    long long time_start, time_stop, misc;
     char str[1024], temp[24], *user_input = NULL;
     char *prompt_string = NULL; /* Full prompt string */
     Word_array *prompt = NULL;
     Word *prompt_lines; /* Array of lines for displaying */
-    struct timeval timer_start, timer_stop;
+    struct timeval timer_start, timer_stop, test_end;
     while (run) {
-        if (new_test == 1) {
+        if (new_test == 1 || new_test == 2) {
             clear();
             accuracy = 0;
             curs_set(1);
@@ -91,25 +94,26 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
             /* Reset str */
             str[0] = '\0';
 
-            if (mode == 0) {
-                strcat(str, "Timed Test - ");
-                strcat(str, TIMED_MODES_STRING[level]);
-                print_centered_text(stdscr, 0, str);
-            } else {
-                strcat(str, "Word Test - ");
-                strcat(str, WORD_MODES_STRING[level]);
-                print_centered_text(stdscr, 0, str);
-            }
-
             if (prompt == NULL) {
                 prompt = malloc(sizeof(Word_array));
             } else {
                 clear_word_array(prompt);
             }
 
-            /* Only works for words mode for now, no timed */
+            if (mode == 0) {
+                strcat(str, "Timed Test - ");
+                strcat(str, TIMED_MODES_STRING[level]);
+                print_centered_text(stdscr, 0, str);
+                end_test = 0;
+                level = 0; /* 50 words */
+                generate_words(WORD_MODES[0], word_array, prompt);
+            } else {
+                strcat(str, "Word Test - ");
+                strcat(str, WORD_MODES_STRING[level]);
+                print_centered_text(stdscr, 0, str);
+                generate_words(WORD_MODES[level], word_array, prompt);
+            }
 
-            generate_words(WORD_MODES[level], word_array, prompt);
 
             if (user_input != NULL) {
                 free(user_input);
@@ -118,8 +122,6 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
             user_input = malloc(prompt->num_characters + 1);
             user_input[0] = '\0';
             user_input_length = 0;
-
-            new_test = 0;
 
             prompt_string = malloc(prompt->num_characters); /* For easier parsing of prompt */
             prompt_string[0] = '\0';
@@ -135,10 +137,19 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
             printf("%s", user_input);
 
             print_typing_prompt(win, prompt, prompt_string, user_input);
-            start_timer = 1; /* Flag timer as ready to be started */
+
+            if (new_test == 1) {
+                start_timer = 1; /* Flag timer as ready to be started */
+            } else {
+                start_timer = 0;
+            }
+
+            new_test = 0;
+
         }
 
         ch = getch();
+
         if (isalnum(ch) || ch == ' ' || ch == '\'') { /* If typing prompt character */
             if (start_timer) {
                 gettimeofday(&timer_start, NULL);
@@ -171,127 +182,166 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
         }
 
         user_input_length = strlen(user_input);
-        if (user_input_length == strlen(prompt_string) && user_input[user_input_length - 1] == prompt_string[user_input_length - 1]) {
-            gettimeofday(&timer_stop, NULL);
-            /* Convert time stamps to miliseconds */
-            long long time_start = timer_start.tv_sec * 1000LL + timer_start.tv_usec / 1000;
-            long long time_stop = timer_stop.tv_sec * 1000LL + timer_stop.tv_usec / 1000;
+
+        /* If timed test, see if test is still going */
+        /* Test if last keystroke is ignored */
+        if (mode == 0) {
+            gettimeofday(&test_end, NULL);
+
+            time_start = timer_start.tv_sec * 1000LL + timer_start.tv_usec / 1000;
+            misc = test_end.tv_sec * 1000LL + test_end.tv_usec / 1000;
+
+            elapsed_time = misc - time_start; /* Calculates elapsed time of test in seconds */
+            elapsed_time /= 1000;
+
+            /* Checks if test is over */
+            if (elapsed_time >= TIMED_MODES[level]) {
+                end_test = 1;
+                /* Ignores last keystroke */
+                user_input_length--;
+                accuracy--;
 
 
-
-            /* Subtract starting time from ending time to get elapsed time */
-            test_time = time_stop - time_start;
-            test_time /= 1000; /* Convert time into seconds */
-
-            /* WPM = (Total Chars / 5) /(Total Mins) */
-            wpm = (accuracy / 5) / (test_time / 60);
-            wpm_raw = ((double)user_input_length / 5) / (test_time / 60);
-
-            /* Update stats */
-            stats->data[TESTS_COMPLETE]++;
-            stats->data[CHARS_TYPED] += user_input_length;
-            stats->data[CHARS_CORRECT] += accuracy;
-
-            /* Calculate accuracy */
-            accuracy = (accuracy / user_input_length) * 100;
-
-            clear();
-
-            /* Print end screen */
-
-            print_centered_text(stdscr, 0, str); /* Print test type */
-            curs_set(0);
-            print_centered_text(win, 2, "Test Complete!");
-
-            /* Note, console resizing support is planned. */
-
-            /* Generate WPM String */
-            str[0] = '\0';
-            append_line("WPM: ", str);
-            gcvt(wpm, 5, temp);
-            append_line(temp, str);
-            print_centered_text(win, line++, str);
-
-            str[0] = '\0';
-            append_line("Raw WPM: ", str);
-            gcvt(wpm_raw, 5, temp);
-            append_line(temp, str);
-            print_centered_text(win, line++, str);
-
-
-            /* Generate Accuracy String */
-            str[0] = '\0';
-            append_line("Accuracy: ", str);
-            gcvt(accuracy, 5, temp);
-            append_line(temp, str);
-            append_line("\%%", str);
-            print_centered_text(win, line++, str);
-
-            /* Generate Time String */
-            str[0] = '\0';
-            append_line("Time: ", str);
-            gcvt(test_time, 5, temp);
-            append_line(temp, str);
-            append_line("s", str);
-            print_centered_text(win, line++, str);
-
-            /* Generate Characters String */
-            str[0] = '\0';
-            append_line("Characters: ", str);
-            sprintf(temp, "%d", user_input_length);
-            append_line(temp, str);
-            print_centered_text(win, line++, str);
-
-            print_centered_text(win, 19, "Press tab to start a new test, or any key to return to main menu");
-
-            switch (level) {
-            case 0:
-                if (stats->data[W_5] < (int)wpm) {
-                    stats->data[W_5] = (int)wpm;
-                    print_centered_text(win, 17, "New High Score!");
-                    update_max_wpm(stats);
-                }
-                break;
-            case 1:
-                if (stats->data[W_10] < (int)wpm) {
-                    stats->data[W_10] = (int)wpm;
-                    print_centered_text(win, 17, "New High Score!");
-                    update_max_wpm(stats);
-                }
-                break;
-            case 2:
-                if (stats->data[W_25] < (int)wpm) {
-                    stats->data[W_25] = (int)wpm;
-                    print_centered_text(win, 17, "New High Score!");
-                    update_max_wpm(stats);
-                }
-                break;
-            case 3:
-                if (stats->data[W_50] < (int)wpm) {
-                    stats->data[W_50] = (int)wpm;
-                    print_centered_text(win, 17, "New High Score!");
-                    update_max_wpm(stats);
-                }
-                break;
-            case 4:
-                if (stats->data[W_100] < (int)wpm) {
-                    stats->data[W_100] = (int)wpm;
-                    print_centered_text(win, 17, "New High Score!");
-                    update_max_wpm(stats);
-                }
-                break;
             }
+            elapsed_time = 0;
+        }
 
-
-
-            /* Wait on user input */
-            ch = getch();
-            if (ch != '	') {
-                run = 0;
-                clear();
+        /* End of test */
+        if ((user_input_length == strlen(prompt_string) && user_input[user_input_length - 1] == prompt_string[user_input_length - 1]) || (mode == 0 && end_test)) {
+            if (mode == 0 && !end_test) {
+                /* If timed test is not over yet */
+                timed_reserved_accuracy += accuracy;
+                timed_reserved_characters += user_input_length;
+                new_test = 2;
             } else {
-                new_test = 1;
+                /* If end of test screen should be shown */
+                if (mode == 0) {
+                    /* If finished test was a timed test */
+                    accuracy += timed_reserved_accuracy;
+                    user_input_length += timed_reserved_characters;
+                    test_time = TIMED_MODES[level];
+                } else {
+                    /* If finished test was a word test */
+                    /* Convert time stamps to miliseconds */
+                    gettimeofday(&timer_stop, NULL);
+                    time_start = timer_start.tv_sec * 1000LL + timer_start.tv_usec / 1000;
+                    time_stop = timer_stop.tv_sec * 1000LL + timer_stop.tv_usec / 1000;
+
+                    /* Subtract starting time from ending time to get elapsed time */
+                    test_time = time_stop - time_start;
+                    test_time /= 1000; /* Convert time into seconds */
+                }
+
+                /* WPM = (Total Chars / 5) /(Total Mins) */
+                wpm = (accuracy / 5) / (test_time / 60);
+                wpm_raw = ((double)user_input_length / 5) / (test_time / 60);
+
+                /* Update stats */
+                stats->data[TESTS_COMPLETE]++;
+                stats->data[CHARS_TYPED] += user_input_length;
+                stats->data[CHARS_CORRECT] += accuracy;
+
+                /* Calculate accuracy */
+                accuracy = (accuracy / user_input_length) * 100;
+
+                clear();
+
+                /* Print end screen */
+
+                print_centered_text(stdscr, 0, str); /* Print test type */
+                curs_set(0);
+                print_centered_text(win, 2, "Test Complete!");
+
+                /* Note, console resizing support is planned. */
+
+                /* Generate WPM String */
+                str[0] = '\0';
+                append_line("WPM: ", str);
+                gcvt(wpm, 5, temp);
+                append_line(temp, str);
+                print_centered_text(win, line++, str);
+
+                str[0] = '\0';
+                append_line("Raw WPM: ", str);
+                gcvt(wpm_raw, 5, temp);
+                append_line(temp, str);
+                print_centered_text(win, line++, str);
+
+
+                /* Generate Accuracy String */
+                str[0] = '\0';
+                append_line("Accuracy: ", str);
+                gcvt(accuracy, 5, temp);
+                append_line(temp, str);
+                append_line("\%%", str);
+                print_centered_text(win, line++, str);
+
+                /* Generate Time String */
+                str[0] = '\0';
+                append_line("Time: ", str);
+                gcvt(test_time, 5, temp);
+                append_line(temp, str);
+                append_line("s", str);
+                print_centered_text(win, line++, str);
+
+                /* Generate Characters String */
+                str[0] = '\0';
+                append_line("Characters: ", str);
+                sprintf(temp, "%d", user_input_length);
+                append_line(temp, str);
+                print_centered_text(win, line++, str);
+
+                print_centered_text(win, 19, "Press tab to start a new test, or any key to return to main menu");
+
+                switch (level) {
+                case 0:
+                    if (stats->data[W_5] < (int)wpm) {
+                        stats->data[W_5] = (int)wpm;
+                        print_centered_text(win, 17, "New High Score!");
+                        update_max_wpm(stats);
+                    }
+                    break;
+                case 1:
+                    if (stats->data[W_10] < (int)wpm) {
+                        stats->data[W_10] = (int)wpm;
+                        print_centered_text(win, 17, "New High Score!");
+                        update_max_wpm(stats);
+                    }
+                    break;
+                case 2:
+                    if (stats->data[W_25] < (int)wpm) {
+                        stats->data[W_25] = (int)wpm;
+                        print_centered_text(win, 17, "New High Score!");
+                        update_max_wpm(stats);
+                    }
+                    break;
+                case 3:
+                    if (stats->data[W_50] < (int)wpm) {
+                        stats->data[W_50] = (int)wpm;
+                        print_centered_text(win, 17, "New High Score!");
+                        update_max_wpm(stats);
+                    }
+                    break;
+                case 4:
+                    if (stats->data[W_100] < (int)wpm) {
+                        stats->data[W_100] = (int)wpm;
+                        print_centered_text(win, 17, "New High Score!");
+                        update_max_wpm(stats);
+                    }
+                    break;
+                }
+
+                /* Wait on user input */
+                ch = getch();
+                if (ch != '	') {
+                    run = 0;
+                    clear();
+                } else {
+                    new_test = 1;
+                }
             }
+
+
         } else {
             /* Prints typing prompt after all input is done processing */
             print_typing_prompt(win, prompt, prompt_string, user_input);
