@@ -76,7 +76,7 @@ void print_typing_prompt(WINDOW *win, Word_array *prompt, char *prompt_string,
 }
 
 void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_struct *stats) {
-    int run = 1, ch, i, new_test = 1, user_input_length, start_timer, line = 4, end_test;
+    int run = 1, ch, i, new_test = 1, user_input_length, start_timer, line = 4, end_test, row;
     int timed_reserved_accuracy, timed_reserved_characters;
     double test_time, wpm, wpm_raw, accuracy, elapsed_time;
     long long time_start, time_stop, misc;
@@ -87,9 +87,15 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
     struct timeval timer_start, timer_stop, test_end;
     while (run) {
         if (new_test == 1 || new_test == 2) {
+            /* Reset Vars */
             clear();
             accuracy = 0;
             curs_set(1);
+
+            if (new_test == 1) {
+                timed_reserved_accuracy = 0;
+                timed_reserved_characters = 0;
+            }
 
             /* Reset str */
             str[0] = '\0';
@@ -100,13 +106,13 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
                 clear_word_array(prompt);
             }
 
+            /* Draw UI */
             if (mode == 0) {
                 strcat(str, "Timed Test - ");
                 strcat(str, TIMED_MODES_STRING[level]);
                 print_centered_text(stdscr, 0, str);
                 end_test = 0;
-                level = 0; /* 50 words */
-                generate_words(WORD_MODES[0], word_array, prompt);
+                generate_words(WORD_MODES[2], word_array, prompt);
             } else {
                 strcat(str, "Word Test - ");
                 strcat(str, WORD_MODES_STRING[level]);
@@ -140,6 +146,8 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
 
             if (new_test == 1) {
                 start_timer = 1; /* Flag timer as ready to be started */
+                timed_reserved_accuracy = 0;
+                timed_reserved_characters = 0;
             } else {
                 start_timer = 0;
             }
@@ -201,7 +209,26 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
                 user_input_length--;
                 accuracy--;
 
+                clear();
+                row = 4;
+                print_centered_text(win, row++, "Time's up!");
+                print_centered_text(win, row++, "Press Enter to See Results");
+                print_centered_text(win, row++, "Or Tab to start a new test");
 
+                while (1) {
+                    ch = getch();
+                    if (ch == '\n') {
+                        break;
+                    } else if (ch == 27) { /* If esc, end and do not save results */
+                        run = 0;
+                        end_test = 0;
+                        break;
+                    } else if (ch == '	') {
+                        new_test = 1;
+                        end_test = 0;
+                        break;
+                    }
+                }
             }
             elapsed_time = 0;
         }
@@ -240,6 +267,8 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
                 stats->data[TESTS_COMPLETE]++;
                 stats->data[CHARS_TYPED] += user_input_length;
                 stats->data[CHARS_CORRECT] += accuracy;
+                stats->data[TIME_TYPED] += (test_time * 10);
+                /* Multiply by 10 to more precision */
 
                 /* Calculate accuracy */
                 accuracy = (accuracy / user_input_length) * 100;
@@ -293,42 +322,45 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
 
                 print_centered_text(win, 19, "Press tab to start a new test, or any key to return to main menu");
 
-                switch (level) {
-                case 0:
-                    if (stats->data[W_5] < (int)wpm) {
-                        stats->data[W_5] = (int)wpm;
-                        print_centered_text(win, 17, "New High Score!");
-                        update_max_wpm(stats);
+                /* Stats are only for word mode */
+                if (mode == 1) {
+                    switch (level) {
+                    case 0:
+                        if (stats->data[W_5] < (int)wpm) {
+                            stats->data[W_5] = (int)wpm;
+                            print_centered_text(win, 17, "New High Score!");
+                            update_max_wpm(stats);
+                        }
+                        break;
+                    case 1:
+                        if (stats->data[W_10] < (int)wpm) {
+                            stats->data[W_10] = (int)wpm;
+                            print_centered_text(win, 17, "New High Score!");
+                            update_max_wpm(stats);
+                        }
+                        break;
+                    case 2:
+                        if (stats->data[W_25] < (int)wpm) {
+                            stats->data[W_25] = (int)wpm;
+                            print_centered_text(win, 17, "New High Score!");
+                            update_max_wpm(stats);
+                        }
+                        break;
+                    case 3:
+                        if (stats->data[W_50] < (int)wpm) {
+                            stats->data[W_50] = (int)wpm;
+                            print_centered_text(win, 17, "New High Score!");
+                            update_max_wpm(stats);
+                        }
+                        break;
+                    case 4:
+                        if (stats->data[W_100] < (int)wpm) {
+                            stats->data[W_100] = (int)wpm;
+                            print_centered_text(win, 17, "New High Score!");
+                            update_max_wpm(stats);
+                        }
+                        break;
                     }
-                    break;
-                case 1:
-                    if (stats->data[W_10] < (int)wpm) {
-                        stats->data[W_10] = (int)wpm;
-                        print_centered_text(win, 17, "New High Score!");
-                        update_max_wpm(stats);
-                    }
-                    break;
-                case 2:
-                    if (stats->data[W_25] < (int)wpm) {
-                        stats->data[W_25] = (int)wpm;
-                        print_centered_text(win, 17, "New High Score!");
-                        update_max_wpm(stats);
-                    }
-                    break;
-                case 3:
-                    if (stats->data[W_50] < (int)wpm) {
-                        stats->data[W_50] = (int)wpm;
-                        print_centered_text(win, 17, "New High Score!");
-                        update_max_wpm(stats);
-                    }
-                    break;
-                case 4:
-                    if (stats->data[W_100] < (int)wpm) {
-                        stats->data[W_100] = (int)wpm;
-                        print_centered_text(win, 17, "New High Score!");
-                        update_max_wpm(stats);
-                    }
-                    break;
                 }
 
                 /* Wait on user input */
@@ -340,7 +372,6 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
                     new_test = 1;
                 }
             }
-
 
         } else {
             /* Prints typing prompt after all input is done processing */
@@ -397,7 +428,8 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
     temp_str[0] = '\0';
 
     append_line("Average WPM: ", temp_str);
-    /* Calculate here */
+    temp = (((double) stats->data[CHARS_CORRECT]) / 5) / (((double) stats->data[TIME_TYPED]) / 600);
+    gcvt(temp, 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
     row++;
@@ -427,8 +459,9 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
     temp_str[0] = '\0';
 
     append_line("Time Spent Typing: ", temp_str);
-    gcvt(stats->data[TIME_TYPED], 5, temp_num);
+    gcvt((double) stats->data[TIME_TYPED]/ 600, 5, temp_num);
     append_line(temp_num, temp_str);
+    append_line(" min", temp_str);
     print_centered_text(win, row, temp_str);
     row += 2;
     temp_str[0] = '\0';
