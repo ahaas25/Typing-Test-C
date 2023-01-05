@@ -8,11 +8,6 @@ void print_centered_text(WINDOW *win, int row, char *str) {
     mvwprintw(win, row, center_col, str);
 }
 
-/* To do */
-/* Track misinputs? */
-/* Fix stats screen on timed mode */
-/* Polish timed mode code */
-
 /* Prints centered text for menu items */
 void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_STRING],
     int highlight, int elements) {
@@ -41,6 +36,20 @@ void print_centered_text_menu(WINDOW *win, int row, int target, char str[][MAX_S
         }
 
     }
+}
+
+/* Highlights text if cursor points to the col */
+void print_centered_text_menu_single(WINDOW *win, int row, int target, char str[]) {
+    int text_length = strlen(str), cursor;
+
+    cursor = (win->_maxx - text_length) / 2;
+    move(row, cursor);
+
+    if (target == row) {
+        attron(A_STANDOUT);
+    }
+    printw(str);
+    attroff(A_STANDOUT);
 }
 
 /* Prints the typing prompt onto the terminal.
@@ -119,7 +128,6 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
                 print_centered_text(stdscr, 0, str);
                 generate_words(WORD_MODES[level], word_array, prompt);
             }
-
 
             if (user_input != NULL) {
                 free(user_input);
@@ -385,25 +393,70 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
 
 /* Draws settings UI to console */
 /* Placeholder, will work on next */
-void settings_ui(WINDOW *win) {
-    char ch;
-    clear();
-    print_centered_text(win, 0, "Settings");
+void settings_ui(WINDOW *win, Stat_struct *stats) {
+    FILE *stats_file;
+    int selection = 13, row = 0, count = 2, run = 1;
+    int selections[] = { 8, 11, 13 };
+    int ch;
 
-    print_centered_text(win, 3, "Controls");
-    print_centered_text(win, 4, "Tab - Reset Test");
-    print_centered_text(win, 5, "Esc - End Test");
+    while (run) {
+        clear();
+        row = 0;
+        print_centered_text(win, row, "Settings");
 
-    print_centered_text(win, 7, "Themes");
-    print_centered_text(win, 8, "Default");
+        row += 3;
+        print_centered_text(win, row++, "Controls");
+        print_centered_text(win, row++, "Tab - Reset Test");
+        print_centered_text(win, row, "Esc - End Test");
 
-    print_centered_text(win, 10, "Statistics");
-    print_centered_text(win, 11, "Reset Stats");
+        row += 2;
 
-    print_centered_text(win, 13, "Return to Menu");
-    refresh();
+        print_centered_text(win, row++, "Themes");
+        print_centered_text_menu_single(win, row, selection, "Default");
 
-    ch = getchar();
+        row += 2;
+
+        print_centered_text(win, row++, "Statistics");
+        print_centered_text_menu_single(win, row, selection, "Reset Stats");
+
+        row += 2;
+
+        print_centered_text_menu_single(win, row, selection, "Return to Menu");
+        refresh();
+
+        ch = getch();
+
+        switch (ch) {
+        case KEY_UP:
+            if (count == 0) {
+                count = 2;
+            } else {
+                count--;
+            }
+            break;
+        case KEY_DOWN:
+            if (count < 2) {
+                count++;
+            } else {
+                count = 0;
+            }
+            break;
+        case '\n':
+            if (count == 2) { /* Exit menu */
+                run = 0;
+            } else if (count == 1) { /* Clear stats */
+                stats_file = fopen(STATS_FILEPATH, "w");
+                create_stats_file(stats_file);
+                stats_file = fopen(STATS_FILEPATH, "r");
+                load_stats(stats_file, stats);
+            }
+        }
+        selection = selections[count];
+        move(0, 0);
+        printw("The count is: %d", count);
+        refresh();
+    }
+
     clear();
 }
 
@@ -428,7 +481,7 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
     temp_str[0] = '\0';
 
     append_line("Average WPM: ", temp_str);
-    temp = (((double) stats->data[CHARS_CORRECT]) / 5) / (((double) stats->data[TIME_TYPED]) / 600);
+    temp = (((double)stats->data[CHARS_CORRECT]) / 5) / (((double)stats->data[TIME_TYPED]) / 600);
     gcvt(temp, 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
@@ -459,7 +512,7 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
     temp_str[0] = '\0';
 
     append_line("Time Spent Typing: ", temp_str);
-    gcvt((double) stats->data[TIME_TYPED]/ 600, 5, temp_num);
+    gcvt((double)stats->data[TIME_TYPED] / 600, 5, temp_num);
     append_line(temp_num, temp_str);
     append_line(" min", temp_str);
     print_centered_text(win, row, temp_str);
@@ -505,6 +558,7 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
     refresh();
 
     ch = getchar();
+
     clear();
 }
 
@@ -523,8 +577,8 @@ int main() {
     noecho();
 
     print_centered_text(stdscr, 4, "Loading...");
-    words_file = fopen("words.txt", "r");
-    stats_file = fopen("stats", "r");
+    words_file = fopen(WORDS_FILEPATH, "r");
+    stats_file = fopen(STATS_FILEPATH, "r");
 
     if (has_colors() == FALSE) {
         print_centered_text(stdscr, 4, "Your terminal does not support color");
@@ -554,9 +608,9 @@ int main() {
 
     /* Creates a new stats file if one is not detected */
     if (stats_file == NULL) {
-        stats_file = fopen("stats", "w");
+        stats_file = fopen(STATS_FILEPATH, "w");
         create_stats_file(stats_file);
-        stats_file = fopen("stats", "r");
+        stats_file = fopen(STATS_FILEPATH, "r");
     }
 
     /* Load stats from stats file */
@@ -621,7 +675,7 @@ int main() {
                 stat_ui(stdscr, &stats);
             } else if (cursor_x == 2 && cursor_y == 2) {
                 /* Settings */
-                settings_ui(stdscr);
+                settings_ui(stdscr, &stats);
             } else if (cursor_y == 1 || cursor_y == 0) {
                 typing_ui(stdscr, cursor_x, cursor_y, word_array, &stats);
                 clear();
@@ -636,7 +690,7 @@ int main() {
 
     /* Saves stats and closes file */
     /* Open stats first */
-    stats_file = fopen("stats", "w");
+    stats_file = fopen(STATS_FILEPATH, "w");
     save_stats(stats_file, &stats);
 
     return 0;

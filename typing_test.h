@@ -14,6 +14,8 @@
 #define NUM_MISC 3
 #define SUCCESS 1
 #define FAILURE 0
+#define WORDS_FILEPATH "words.txt"
+#define STATS_FILEPATH "stats"
 
 char TIMED_MODES_STRING[5][MAX_STRING] = { "5s", "10s", "25s", "30s", "60s" };
 int TIMED_MODES[5] = {5, 10, 25, 30, 60};

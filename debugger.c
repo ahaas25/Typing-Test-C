@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ncurses.h>
 #include <sys/time.h>
+#include <time.h>
 #include "utilities.h"
 #include "typing_test.h"
 
@@ -31,15 +32,14 @@ void debug_words() {
 }
 
 void debug_stats() {
+    int i;
     FILE *stats_file;
     Stat_struct x;
-    char buf[256], temp[256];
-    int temp_stat;
     stats_file = fopen("stats", "r");
 
     load_stats(stats_file, &x);
     
-    for (int i = 0; i < 9; i++) {
+    for (i = 0; i < 9; i++) {
         printf("%d\n", x.data[i]);
     }
 
@@ -47,5 +47,6 @@ void debug_stats() {
 
 int main() {
     debug_stats();
+    return 0;
 }
 

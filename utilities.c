@@ -127,7 +127,6 @@ int update_max_wpm(Stat_struct *stats) {
     return SUCCESS;
 }
 
-
 /* Appends first parameter to the end of end of the second parameter
     (Does not change size of the target, assumes there is space) */
 void append_line(char *source, char *target) {
