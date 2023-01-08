@@ -55,6 +55,10 @@ Find it [here](https://github.com/ahaas25/Typing-Test-C/releases/tag/milestone)
 Second release goal:
 The second release goal for this project is to have a much more refined project. I hope to have all modes implemented, the UI to automatically wrap the console size, and user keystroke analysis if time permits. I'm hoping to have this release out by early January. (It's finals season so I won't have much time to work on this project until late December)
 
+Second release goal reached! Due to time constraints, not all features were implemented in this release.
+Find it [here](https://github.com/ahaas25/Typing-Test-C/releases/tag/milestone2)
+
+
 Current status of project:
 
 Code:
@@ -63,11 +67,11 @@ Code:
 * Different test lengths *implemented*
 * Timed Tests to be implemented
 * Test results screen *implemeted*
-* Saving user stats to be implemented
+* Saving user stats *implemented*
 * Per-key stats to be implemented
 
 UI:
 * Main menu *implemented*
-* Typing prompt *in progress*
-* Stats menu to be implemented
-* Settings menu to be implemented
+* Typing prompt *implemented*
+* Stats menu *implemented*
+* Settings menu *implemented*
