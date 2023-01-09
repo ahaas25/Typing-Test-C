@@ -1,4 +1,4 @@
-# Typing-Test-C (WIP)
+# Typing-Test-C
 
 
 <p align="center">
@@ -58,17 +58,16 @@ The second release goal for this project is to have a much more refined project.
 Second release goal reached! Due to time constraints, not all features were implemented in this release.
 Find it [here](https://github.com/ahaas25/Typing-Test-C/releases/tag/milestone2)
 
-
 Current status of project:
 
 Code:
 * Reading of words.txt *implemented*
 * Random word picking *implemented*
 * Different test lengths *implemented*
-* Timed Tests to be implemented
+* Timed Tests *implemented*
 * Test results screen *implemeted*
 * Saving user stats *implemented*
-* Per-key stats to be implemented
+* ~~Per-key stats~~ May be added in a feature release
 
 UI:
 * Main menu *implemented*
