@@ -474,7 +474,7 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
 
     row += 3;
     append_line("Best WPM: ", temp_str);
-    gcvt(stats->data[BEST_WPM], 5, temp_num);
+    gcvt((double)stats->data[BEST_WPM], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
     row++;
@@ -498,14 +498,14 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
     temp_str[0] = '\0';
 
     append_line("Tests Completed: ", temp_str);
-    gcvt(stats->data[TESTS_COMPLETE], 5, temp_num);
+    gcvt((double)stats->data[TESTS_COMPLETE], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
     row++;
     temp_str[0] = '\0';
 
     append_line("Keys Typed: ", temp_str);
-    gcvt(stats->data[CHARS_TYPED], 5, temp_num);
+    gcvt((double)stats->data[CHARS_TYPED], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
     row++;
@@ -520,35 +520,35 @@ void stat_ui(WINDOW *win, Stat_struct *stats) {
     temp_str[0] = '\0';
 
     append_line("5 Word Test: ", temp_str);
-    gcvt(stats->data[W_5], 5, temp_num);
+    gcvt((double)stats->data[W_5], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
     row++;
     temp_str[0] = '\0';
 
     append_line("10 Word Test: ", temp_str);
-    gcvt(stats->data[W_10], 5, temp_num);
+    gcvt((double)stats->data[W_10], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
     row++;
     temp_str[0] = '\0';
 
     append_line("25 Word Test: ", temp_str);
-    gcvt(stats->data[W_25], 5, temp_num);
+    gcvt((double)stats->data[W_25], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
     row++;
     temp_str[0] = '\0';
 
     append_line("50 Word Test: ", temp_str);
-    gcvt(stats->data[W_50], 5, temp_num);
+    gcvt((double)stats->data[W_50], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
     row++;
     temp_str[0] = '\0';
 
     append_line("100 Word Test: ", temp_str);
-    gcvt(stats->data[W_100], 5, temp_num);
+    gcvt((double)stats->data[W_100], 5, temp_num);
     append_line(temp_num, temp_str);
     print_centered_text(win, row, temp_str);
     row += 2;
