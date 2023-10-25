@@ -33,6 +33,7 @@
 
 * Download source files
 * Install ncurses (If not already installed)
+  * On Debian Systems: ```sudo apt install libncurses5-dev libncursesw5-dev```
 * Compile Using ```gcc typing_test.c utilities.c -lncurses```
 * OR: Run ```make``` using Makefile
 
@@ -74,3 +75,4 @@ UI:
 * Typing prompt *implemented*
 * Stats menu *implemented*
 * Settings menu *implemented*
+* Themes

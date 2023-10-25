@@ -285,6 +285,8 @@ void typing_ui(WINDOW *win, int level, int mode, Word_array *word_array, Stat_st
 
                 /* Print end screen */
 
+                line = 4;
+
                 print_centered_text(stdscr, 0, str); /* Print test type */
                 curs_set(0);
                 print_centered_text(win, 2, "Test Complete!");
